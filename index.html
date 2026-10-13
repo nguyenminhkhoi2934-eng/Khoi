@@ -1,0 +1,3495 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"><meta name="theme-color" content="#081320">
+<title>LED / CANVAS - iPhone</title>
+<style>
+  :root {
+    --bg-darkest: #070a0f;
+    --bg-main: #0c1017;
+    --bg-panel: #111722;
+    --bg-input: #172030;
+    --bg-hover: #1e2a3f;
+    --border-color: #223047;
+    --border-subtle: rgba(255, 255, 255, 0.08);
+    --text-primary: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --accent-green: #10b981;
+    --accent-green-hover: #059669;
+    --accent-cyan: #06b6d4;
+    --accent-blue: #3b82f6;
+    --accent-red: #ef4444;
+    --accent-yellow: #f59e0b;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif; }
+  body { background: var(--bg-darkest); color: var(--text-primary); height: 100vh; display: flex; flex-direction: column; overflow: hidden; font-size: 12px; }
+
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: var(--bg-panel); }
+  ::-webkit-scrollbar-thumb { background: #223249; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #324765; }
+
+  /* HEADER */
+  header {
+    background: #080c13;
+    border-bottom: 1px solid var(--border-color);
+    padding: 6px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    z-index: 100;
+  }
+  .brand { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 13px; letter-spacing: 1.5px; color: #fff; }
+  .brand .tag { font-size: 9px; font-weight: 800; background: #13243a; color: var(--accent-cyan); padding: 2px 6px; border-radius: 3px; border: 1px solid #1e3b60; }
+  .header-actions { display: flex; gap: 6px; align-items: center; }
+
+  .btn {
+    background: #172233;
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    padding: 5px 11px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.15s ease;
+    user-select: none;
+  }
+  .btn:hover:not(:disabled) { background: var(--bg-hover); border-color: #384d6b; color: #fff; }
+  .btn:active:not(:disabled) { transform: translateY(1px); }
+  .btn:disabled { opacity: 0.35; cursor: not-allowed; }
+  .btn-action { background: #162a45; border-color: #23436e; color: #7dd3fc; }
+  .btn-action:hover:not(:disabled) { background: #1f3b60; color: #fff; }
+  .btn-save { background: #064e3b; border-color: #047857; color: #6ee7b7; }
+  .btn-save:hover:not(:disabled) { background: #047857; color: #fff; }
+  .btn-export { background: #1e3a5f; border-color: #2563eb; color: #93c5fd; }
+  .btn-export:hover:not(:disabled) { background: #2563eb; color: #fff; }
+  .separator { width: 1px; height: 16px; background: var(--border-color); margin: 0 3px; }
+
+  /* WORKSPACE */
+  .workspace { display: flex; flex: 1; overflow: hidden; position: relative; }
+
+  .sidebar {
+    width: 325px;
+    background: var(--bg-panel);
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    padding: 12px;
+    gap: 12px;
+    overflow-y: auto;
+  }
+  .sidebar.right { border-right: none; border-left: 1px solid var(--border-color); width: 310px; }
+
+  .title-group h1 { font-size: 14px; letter-spacing: 1.5px; font-weight: 800; color: #fff; }
+  .title-group p { font-size: 9px; color: var(--text-muted); letter-spacing: 1px; font-weight: 600; }
+  .section-title { font-size: 10px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 5px; font-weight: 700; display: flex; justify-content: space-between; align-items: center; }
+  
+  .box {
+    background: rgba(13, 19, 30, 0.6);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .input-row { display: flex; gap: 6px; align-items: center; }
+  .input-row label { font-size: 11px; color: var(--text-secondary); min-width: 65px; }
+  .input-field {
+    background: var(--bg-input);
+    border: 1px solid var(--border-color);
+    color: #fff;
+    padding: 5px 8px;
+    border-radius: 4px;
+    width: 100%;
+    font-size: 11px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .input-field:focus { border-color: var(--accent-cyan); }
+  select.input-field { cursor: pointer; }
+  input[type="color"] { padding: 1px 2px; height: 26px; cursor: pointer; }
+
+  /* PORT CHIPS BUTTONS */
+  .port-chip {
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    border: 1px solid transparent;
+    background: #141d2a;
+    color: var(--text-secondary);
+    transition: all 0.15s;
+  }
+  .port-chip:hover { transform: scale(1.05); color: #fff; }
+  .port-chip.active { font-weight: 800; box-shadow: 0 0 8px currentColor; }
+
+  .preset-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-top: 4px; }
+  .preset-btn {
+    background: #141d2a;
+    border: 1px solid #1f2c3e;
+    color: var(--text-secondary);
+    padding: 4px 6px;
+    border-radius: 3px;
+    font-size: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s;
+  }
+  .preset-btn:hover { background: #1e2c40; color: #fff; border-color: var(--accent-cyan); }
+
+  .screen-card {
+    background: #141d2b;
+    border: 1px solid #1f2c40;
+    padding: 8px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-bottom: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.15s;
+  }
+  .screen-card:hover { background: #1a2638; border-color: var(--accent-cyan); }
+  .screen-card.active { border-color: var(--accent-green); background: #132b21; }
+  .screen-card-info strong { display: block; font-size: 11px; color: #fff; }
+  .screen-card-info span { font-size: 10px; color: var(--text-muted); }
+  .screen-color-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 6px; vertical-align: middle; }
+  .screen-del-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 14px;
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 3px;
+  }
+  .screen-del-btn:hover { color: var(--accent-red); background: rgba(239, 68, 68, 0.2); }
+
+  .dir-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: 4px; }
+
+  /* CANVAS VIEWPORT */
+  .canvas-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    background: var(--bg-void);
+  }
+  .canvas-toolbar {
+    padding: 7px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(10, 14, 22, 0.95);
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .mode-buttons { display: flex; gap: 6px; align-items: center; }
+  .mode-btn {
+    background: #151d2a;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 600;
+    transition: all 0.15s;
+  }
+  .mode-btn.active { background: #132e22; color: #34d399; border-color: var(--accent-green); }
+  .mode-btn.cabling-mode.active { background: #102d38; color: #00f5d4; border-color: #00f5d4; box-shadow: 0 0 10px rgba(0,245,212,0.3); }
+  .mode-btn.delete-mode.active { background: #3b1419; color: #f87171; border-color: var(--accent-red); font-weight: bold; }
+
+  /* HUD ĐIỀU KHIỂN ĐI DÂY PORT */
+  .cabling-hud {
+    position: absolute;
+    top: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(10, 16, 26, 0.94);
+    border: 1px solid var(--accent-cyan);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8), 0 0 15px rgba(6, 182, 212, 0.25);
+    backdrop-filter: blur(8px);
+    border-radius: 30px;
+    padding: 6px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 50;
+    pointer-events: auto;
+  }
+
+  #mainCanvas { flex: 1; width: 100%; height: 100%; cursor: default; touch-action: none; }
+
+  .canvas-footer {
+    padding: 6px 14px;
+    background: var(--bg-panel);
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+  .status-info { display: flex; align-items: center; gap: 14px; }
+  .status-info span { display: inline-flex; align-items: center; gap: 5px; }
+  .status-info strong { color: var(--text-primary); font-weight: 600; }
+  .zoom-controls { display: flex; align-items: center; gap: 5px; }
+  .zoom-btn {
+    background: #151d2a;
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 12px;
+  }
+  .zoom-btn:hover { background: var(--bg-hover); color: #fff; }
+
+  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 4px; }
+  .stat-card {
+    background: #090e17;
+    border: 1px solid var(--border-color);
+    padding: 8px;
+    border-radius: 5px;
+    text-align: center;
+  }
+  .stat-card .val { font-size: 22px; font-weight: 800; color: #fff; }
+  .stat-card .val.fault { color: var(--accent-red); }
+  .stat-card .label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+
+  #toast {
+    position: fixed;
+    bottom: 40px;
+    right: 20px;
+    background: #111e31;
+    color: #fff;
+    border: 1px solid var(--accent-cyan);
+    padding: 8px 16px;
+    border-radius: 5px;
+    font-size: 12px;
+    font-weight: 500;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    pointer-events: none;
+    z-index: 1000;
+  }
+  #toast.show { opacity: 1; transform: translateY(0); }
+
+  /* POLISHED CONTROL-ROOM THEME */
+  :root {
+    --bg-darkest: #080d16;
+    --bg-main: #0d1421;
+    --bg-panel: #111b2a;
+    --bg-input: #162337;
+    --bg-hover: #20344d;
+    --border-color: #293c56;
+    --border-subtle: rgba(148, 180, 216, 0.12);
+    --text-primary: #edf5ff;
+    --text-secondary: #a8bad0;
+    --text-muted: #7c90aa;
+    --accent-green: #34d399;
+    --accent-cyan: #22d3ee;
+    --accent-blue: #60a5fa;
+  }
+
+  body {
+    background:
+      radial-gradient(ellipse at 50% -25%, rgba(24, 67, 106, 0.24), transparent 52%),
+      var(--bg-darkest);
+    font-size: 13px;
+    letter-spacing: 0.01em;
+  }
+
+  header {
+    min-height: 52px;
+    padding: 8px 18px;
+    background: rgba(8, 14, 24, 0.96);
+    border-bottom-color: rgba(92, 132, 177, 0.28);
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25);
+  }
+
+  .brand { gap: 11px; font-size: 14px; letter-spacing: 1.7px; }
+  .brand .tag { padding: 4px 8px; border-radius: 999px; letter-spacing: 0.8px; }
+  .header-actions { gap: 8px; }
+
+  .btn {
+    min-height: 30px;
+    padding: 6px 12px;
+    border-radius: 7px;
+    border-color: rgba(110, 145, 184, 0.25);
+    background: linear-gradient(180deg, #1b2a3e, #142033);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.16);
+  }
+  .btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 5px 14px rgba(0, 0, 0, 0.25); }
+  .btn-action { background: linear-gradient(180deg, #193b5a, #142b45); border-color: #28547a; color: #a5e2ff; }
+  .btn-save { background: linear-gradient(180deg, #08634a, #064936); border-color: #118363; color: #a7f3d0; }
+  .btn-export { background: linear-gradient(180deg, #26549a, #1b3d71); border-color: #3975c7; color: #d5e8ff; }
+
+  .workspace { background: #0a111c; }
+
+  .sidebar {
+    width: 340px;
+    padding: 16px 13px;
+    gap: 15px;
+    background: linear-gradient(180deg, rgba(19, 30, 46, 0.98), rgba(14, 23, 37, 0.98));
+    border-color: rgba(91, 126, 166, 0.25);
+  }
+  .sidebar.right { width: 320px; }
+
+  .title-group { padding: 2px 4px 4px; }
+  .title-group h1 { font-size: 16px; letter-spacing: 1.8px; }
+  .title-group p { margin-top: 3px; letter-spacing: 1.35px; color: #8299b4; }
+  .section-title {
+    color: #b9cbe0;
+    font-size: 10px;
+    letter-spacing: 1.05px;
+    margin-bottom: 7px;
+  }
+  .section-title > span:last-child { color: var(--accent-cyan) !important; }
+
+  .box {
+    padding: 11px;
+    gap: 9px;
+    border-radius: 9px;
+    border-color: rgba(103, 137, 176, 0.22);
+    background: linear-gradient(145deg, rgba(15, 25, 40, 0.9), rgba(12, 20, 33, 0.9));
+    box-shadow: inset 0 1px rgba(255, 255, 255, 0.025), 0 5px 16px rgba(0, 0, 0, 0.12);
+  }
+
+  .input-row { gap: 8px; min-height: 28px; }
+  .input-row label { color: #a9bdd4; font-size: 11px; }
+  .input-field {
+    min-height: 29px;
+    padding: 6px 9px;
+    border-radius: 6px;
+    border-color: rgba(104, 139, 181, 0.28);
+    background: #121f31;
+    color: #edf5ff;
+  }
+  .input-field:hover { border-color: rgba(125, 170, 218, 0.5); }
+  .input-field:focus { border-color: var(--accent-cyan); box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.12); }
+
+  .screen-card {
+    padding: 10px 11px;
+    border-color: rgba(104, 139, 181, 0.24);
+    border-radius: 8px;
+    background: linear-gradient(135deg, #17263a, #121e30);
+  }
+  .screen-card:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2); }
+  .screen-card.active {
+    border-color: rgba(52, 211, 153, 0.8);
+    background: linear-gradient(135deg, rgba(14, 64, 55, 0.72), rgba(17, 42, 44, 0.92));
+    box-shadow: inset 3px 0 #34d399, 0 0 18px rgba(16, 185, 129, 0.09);
+  }
+
+  .dir-grid { gap: 7px; }
+  .preset-btn { border-radius: 6px; padding: 6px 8px; }
+  .preset-btn:hover { box-shadow: 0 0 0 2px rgba(34, 211, 238, 0.1); }
+
+  .canvas-area { background: #080d16; }
+  .canvas-toolbar {
+    min-height: 48px;
+    padding: 8px 14px;
+    background: rgba(12, 20, 32, 0.96);
+    border-bottom-color: rgba(91, 126, 166, 0.23);
+  }
+  .mode-buttons { gap: 7px; }
+  .mode-btn {
+    min-height: 31px;
+    padding: 6px 12px;
+    border-radius: 7px;
+    background: #152236;
+    border-color: rgba(104, 139, 181, 0.25);
+  }
+  .mode-btn:hover { color: #fff; border-color: rgba(120, 172, 221, 0.6); }
+  .mode-btn.active { box-shadow: 0 0 15px rgba(52, 211, 153, 0.12); }
+  .mode-btn.cabling-mode.active { color: #8ff8f1; }
+
+  .cabling-hud {
+    top: 60px;
+    padding: 8px 14px;
+    gap: 10px;
+    border-radius: 12px;
+    border-color: rgba(34, 211, 238, 0.7);
+    background: rgba(11, 23, 37, 0.94);
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.46), 0 0 22px rgba(6, 182, 212, 0.13);
+  }
+
+  .canvas-footer {
+    min-height: 38px;
+    padding: 6px 12px;
+    background: rgba(12, 20, 32, 0.96);
+    border-top-color: rgba(91, 126, 166, 0.23);
+  }
+  .zoom-btn { width: 28px; height: 28px; border-radius: 6px; }
+
+  .stats-grid { gap: 9px; }
+  .stat-card {
+    border-radius: 9px;
+    border-color: rgba(103, 137, 176, 0.22);
+    background: linear-gradient(145deg, #142136, #101a2a);
+  }
+  .stat-card .val { color: #d9ebff; }
+  #toast {
+    padding: 10px 16px;
+    border-radius: 9px;
+    border-color: rgba(34, 211, 238, 0.55);
+    background: rgba(15, 29, 46, 0.97);
+  }
+
+  button, input, select { accent-color: var(--accent-cyan); }
+  .mobile-nav { display: none; }
+  button:focus-visible, input:focus-visible, select:focus-visible {
+    outline: 2px solid rgba(34, 211, 238, 0.8);
+    outline-offset: 2px;
+  }
+
+  @media (max-width: 1100px) {
+    .sidebar { width: 300px; }
+    .sidebar.right { width: 280px; }
+    .header-actions { gap: 5px; }
+    .header-actions .btn { padding: 5px 8px; }
+  }
+
+  @media (max-width: 760px) {
+    body {
+      height: 100vh;
+      height: 100dvh;
+      min-height: 0;
+      background:
+        radial-gradient(circle at top, rgba(34, 211, 238, 0.12), transparent 33%),
+        linear-gradient(180deg, #050b14 0%, #0a1220 46%, #070d18 100%);
+    }
+
+    header {
+      flex: 0 0 auto;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 10px 10px 12px;
+      background: linear-gradient(180deg, rgba(8, 14, 24, 0.96), rgba(11, 18, 29, 0.9));
+      border-bottom: 1px solid rgba(110, 146, 188, 0.2);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.16);
+    }
+
+    .brand {
+      font-size: 12px;
+      letter-spacing: 1.4px;
+      gap: 7px;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      color: #edf8ff;
+    }
+    .brand .tag {
+      padding: 3px 7px;
+      font-size: 8px;
+      letter-spacing: 1.1px;
+      background: linear-gradient(135deg, rgba(20, 40, 63, 0.9), rgba(12, 24, 36, 1));
+      border: 1px solid rgba(96, 164, 219, 0.35);
+      border-radius: 999px;
+      box-shadow: inset 0 1px rgba(255,255,255,0.06);
+    }
+
+    .header-actions {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 6px;
+      width: 100%;
+      padding-top: 2px;
+    }
+    .header-actions .separator { display: none; }
+    .header-actions .btn {
+      justify-content: center;
+      min-width: 0;
+      min-height: 36px;
+      padding: 5px 7px;
+      font-size: 10px;
+      border-radius: 10px;
+      letter-spacing: 0.04em;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.14), inset 0 1px rgba(255,255,255,0.05);
+      background: linear-gradient(180deg, #1a2d44, #132338);
+      border-color: rgba(128, 163, 206, 0.22);
+    }
+    .btn-action {
+      background: linear-gradient(180deg, #173a57, #12314c) !important;
+      color: #bfeafe !important;
+    }
+    .btn-save {
+      background: linear-gradient(180deg, #0f5c4c, #0a473a) !important;
+      color: #b7f7dc !important;
+    }
+    .btn-export {
+      background: linear-gradient(180deg, #254d87, #1a3e73) !important;
+      color: #dbeaff !important;
+    }
+
+    .workspace {
+      flex: 1;
+      min-height: 0;
+      flex-direction: column;
+      overflow: hidden;
+      background: linear-gradient(180deg, #07111c 0%, #091522 38%, #08121d 100%);
+    }
+
+    .sidebar, .sidebar.right {
+      display: none;
+      width: 100%;
+      min-height: 0;
+      max-height: none;
+      flex: 1 1 auto;
+      border: 0;
+      overflow-y: auto;
+      padding: 12px 10px 18px;
+      background: linear-gradient(180deg, rgba(15, 25, 40, 0.95), rgba(10, 17, 25, 0.98));
+    }
+    .workspace[data-mobile-view="screens"] > .sidebar:not(.right),
+    .workspace[data-mobile-view="cabinet"] > .sidebar.right { display: flex; }
+
+    .canvas-area {
+      display: none;
+      min-height: 0;
+      flex: 1 1 auto;
+      border-top: 1px solid rgba(120, 160, 210, 0.14);
+      background: linear-gradient(180deg, #050b14, #06111d 30%, #081420 100%);
+    }
+    .workspace[data-mobile-view="canvas"] > .canvas-area { display: flex; }
+
+    #mainCanvas { height: 0; min-height: 0; }
+
+    .canvas-toolbar {
+      min-height: 0;
+      align-items: stretch;
+      flex-direction: column;
+      gap: 7px;
+      padding: 8px;
+      background: rgba(11, 17, 27, 0.96);
+      border-bottom: 1px solid rgba(122, 160, 210, 0.14);
+    }
+    .mode-buttons {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 5px;
+    }
+    .mode-btn {
+      min-height: 38px;
+      padding: 5px;
+      font-size: 10px;
+      border-radius: 10px;
+      background: linear-gradient(180deg, #172a43, #122035);
+      border-color: rgba(111, 150, 198, 0.22);
+      color: #d4e7ff;
+      box-shadow: inset 0 1px rgba(255,255,255,0.04);
+    }
+    .mode-btn.active {
+      box-shadow: inset 0 0 0 1px rgba(52, 211, 153, 0.45), 0 8px 16px rgba(16, 185, 129, 0.18);
+    }
+    .mode-btn.cabling-mode.active { box-shadow: inset 0 0 0 1px rgba(34,211,238,0.5), 0 8px 18px rgba(34,211,238,0.18); }
+    #canvasResIndicator { font-size: 10px !important; }
+
+    .canvas-footer {
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 6px 8px;
+      background: rgba(11, 17, 27, 0.96);
+      border-top: 1px solid rgba(122, 160, 210, 0.12);
+    }
+    .status-info { flex-wrap: wrap; gap: 4px 10px; font-size: 10px; }
+    .zoom-controls { gap: 4px; }
+    .zoom-controls .btn { min-height: 32px; }
+
+    .mobile-nav {
+      display: grid;
+      flex: 0 0 auto;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 7px;
+      padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
+      background: linear-gradient(180deg, rgba(8, 14, 24, 0.98), rgba(9, 14, 22, 0.98));
+      border-top: 1px solid rgba(122, 160, 210, 0.18);
+      box-shadow: 0 -12px 28px rgba(0, 0, 0, 0.18);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      position: relative;
+    }
+    .mobile-nav::before {
+      content: "";
+      position: absolute;
+      inset: 8px 8px auto 8px;
+      height: 42px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.04);
+      pointer-events: none;
+    }
+    .mobile-nav button {
+      position: relative;
+      z-index: 1;
+      min-height: 42px;
+      border: 1px solid rgba(121, 161, 210, 0.18);
+      border-radius: 12px;
+      background: linear-gradient(180deg, rgba(27, 39, 58, 0.85), rgba(17, 25, 36, 0.9));
+      color: #d9ebff;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 0.02em;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      box-shadow: inset 0 1px rgba(255,255,255,0.04), 0 6px 14px rgba(0,0,0,0.12);
+      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+    }
+    .mobile-nav button .tab-icon {
+      font-size: 13px;
+      line-height: 1;
+      display: inline-block;
+      transform: translateY(-1px);
+    }
+    .mobile-nav button:active {
+      transform: translateY(1px) scale(0.99);
+    }
+    .mobile-nav button[aria-pressed="true"] {
+      border-color: rgba(34, 211, 238, 0.75);
+      background: linear-gradient(180deg, rgba(12, 44, 56, 0.96), rgba(9, 27, 36, 1));
+      color: #dffcff;
+      box-shadow: inset 0 1px rgba(255,255,255,0.08), 0 0 0 1px rgba(34, 211, 238, 0.15), 0 10px 18px rgba(34, 211, 238, 0.15);
+    }
+
+    .box {
+      border-radius: 14px;
+      background: linear-gradient(145deg, rgba(15, 25, 40, 0.92), rgba(10, 18, 30, 0.96));
+      border: 1px solid rgba(108, 145, 186, 0.2);
+      box-shadow: inset 0 1px rgba(255,255,255,0.03), 0 10px 22px rgba(0,0,0,0.08);
+    }
+    .section-title {
+      margin-bottom: 8px;
+      padding: 0 2px;
+      color: #bcd8f8;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+    .screen-card {
+      border-radius: 12px;
+      margin-bottom: 7px;
+      background: linear-gradient(135deg, rgba(25, 38, 55, 0.95), rgba(14, 23, 35, 0.96));
+      border: 1px solid rgba(110, 145, 182, 0.2);
+      padding: 10px 11px;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.08), inset 0 1px rgba(255,255,255,0.02);
+    }
+    .screen-card.active {
+      background: linear-gradient(135deg, rgba(9, 58, 49, 0.9), rgba(11, 31, 36, 0.98));
+      border-color: rgba(52, 211, 153, 0.5);
+      box-shadow: inset 3px 0 #34d399, 0 12px 18px rgba(16, 185, 129, 0.08);
+    }
+
+    .input-field {
+      min-height: 38px;
+      font-size: 16px;
+      border-radius: 10px;
+      border-color: rgba(118, 157, 204, 0.18);
+      background: linear-gradient(180deg, rgba(18, 29, 44, 0.96), rgba(14, 22, 36, 1));
+    }
+    .input-row { gap: 6px; }
+    .input-row label { min-width: 58px; font-size: 10px; }
+
+    .cabling-hud {
+      top: 8px;
+      left: 8px;
+      right: 8px;
+      transform: none;
+      max-width: none;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding: 8px 10px;
+      border-radius: 12px;
+      background: rgba(10, 23, 34, 0.92);
+      border-color: rgba(34, 211, 238, 0.68);
+      box-shadow: 0 12px 26px rgba(0, 0, 0, 0.35), 0 0 18px rgba(6, 182, 212, 0.12);
+    }
+    #toast {
+      right: 10px;
+      bottom: calc(64px + env(safe-area-inset-bottom));
+      max-width: calc(100vw - 20px);
+      border-radius: 12px;
+      box-shadow: 0 18px 28px rgba(0,0,0,0.22);
+    }
+  }
+
+  @media (max-width: 380px) {
+    .header-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .mode-btn { font-size: 9px; }
+    .status-info span:first-child { display: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; }
+  }
+
+  #saveProjectDialog {
+    width: min(360px, calc(100vw - 32px));
+    margin: auto;
+    padding: 16px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-primary);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.65);
+  }
+  #saveProjectDialog::backdrop { background: rgba(0, 0, 0, 0.7); }
+</style>
+</head>
+<body>
+
+  <input type="file" id="fileInput" accept=".ledproj,.json" style="display:none">
+
+  <!-- TOP HEADER -->
+  <header>
+    <div class="brand">
+      <span>LED / CANVAS</span>
+      <span class="tag">iPHONE</span>
+    </div>
+
+    <div class="header-actions">
+      <button class="btn" id="btnUndo" onclick="undo()" title="Trả lùi (Ctrl+Z)" disabled>↶ Trả lùi</button>
+      <button class="btn" id="btnRedo" onclick="redo()" title="Tiến tới (Ctrl+Y)" disabled>↷ Tiến tới</button>
+      <div class="separator"></div>
+
+      <button class="btn" onclick="newProject()">📄 Tạo mới</button>
+      <button class="btn btn-action" onclick="openProjectFile()">📂 Mở file</button>
+      <button class="btn btn-save" onclick="saveProjectFile()">💾 Lưu file</button>
+      <button class="btn btn-export" onclick="exportPNG()">📸 Export PNG</button>
+    </div>
+  </header>
+
+  <!-- WORKSPACE -->
+  <div class="workspace" id="workspace" data-mobile-view="canvas">
+    <!-- Left Sidebar -->
+    <div class="sidebar">
+      <div class="title-group">
+        <h1>LED / CANVAS</h1>
+        <p>SCREEN & PORT CALCULATION</p>
+      </div>
+
+      <!-- 01 / SCREEN LIST -->
+      <div>
+        <div class="section-title">
+          <span>01 / DANH SÁCH MÀN HÌNH</span>
+          <span id="screenCountBadge" style="color:var(--accent-cyan); font-weight:800;">0</span>
+        </div>
+        <div id="screenListContainer" style="max-height: 110px; overflow-y: auto;"></div>
+
+        <div class="box" style="margin-top: 6px;">
+          <div style="font-size: 10px; color: var(--accent-cyan); font-weight: bold;">+ GHÉP MÀN HÌNH THEO HƯỚNG:</div>
+          <div class="dir-grid">
+            <button class="btn btn-action" onclick="addScreenByDirection('left')">⬅ Sát Trái</button>
+            <button class="btn btn-action" onclick="addScreenByDirection('right')">Sát Phải ➔</button>
+            <button class="btn btn-action" onclick="addScreenByDirection('top')">⬆ Sát Trên</button>
+            <button class="btn btn-action" onclick="addScreenByDirection('bottom')">Sát Dưới ⬇</button>
+          </div>
+
+          <div class="input-row" style="margin-top: 5px;">
+            <label style="min-width: 95px; font-size: 10px;">Khoảng cách ghép:</label>
+            <input type="number" id="screenGapInput" class="input-field" value="0" min="0" step="1" style="width: 55px;">
+            <span style="font-size: 10px; color: var(--text-muted);">px (0 = dính sát)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 02 / SCREEN & MODULE PROPERTIES -->
+      <div>
+        <div class="section-title">02 / THÔNG SỐ, CHUẨN CABIN & PORT</div>
+        <div class="box" id="screenEditBox">
+          
+          <div class="input-row" style="background: rgba(16, 185, 129, 0.08); padding: 5px; border-radius: 4px; border: 1px solid rgba(16, 185, 129, 0.3);">
+            <label style="color: var(--accent-green); font-weight: bold; min-width: 65px;">Loại Cabin:</label>
+            <select id="editScreenCabPreset" class="input-field" style="color: var(--accent-green); font-weight: bold;">
+              <option value="500x500">Cabin 500×500 mm (128×128 px · Max 40 tấm/Port)</option>
+              <option value="500x1000">Cabin 500×1000 mm (128×256 px · Max 20 tấm/Port)</option>
+              <option value="custom">Tùy chỉnh (Custom)...</option>
+            </select>
+          </div>
+
+          <div class="input-row" style="background: rgba(245, 158, 11, 0.08); padding: 5px; border-radius: 4px; border: 1px solid rgba(245, 158, 11, 0.3);">
+            <label style="color: var(--accent-yellow); font-weight: bold;">Chữ ghi chú:</label>
+            <input type="text" id="editScreenCustomText" class="input-field" style="color: var(--accent-yellow); font-weight: bold;" placeholder="VD: MÀN HÌNH CHÍNH, CÁNH GÀ...">
+          </div>
+
+          <div class="input-row">
+            <label>Kiểu chữ:</label>
+            <select id="editScreenTextStyle" class="input-field">
+              <option value="banner">Biển hiệu trung tâm (Center Tag)</option>
+              <option value="watermark">Chữ to in chìm (Watermark)</option>
+              <option value="header">Thanh tiêu đề trên nóc (Top Bar)</option>
+            </select>
+          </div>
+
+          <div class="input-row">
+            <label>Mã màn hình:</label>
+            <input type="text" id="editScreenName" class="input-field">
+          </div>
+
+          <!-- BỘ CHỌN CỔNG PORT TRONG SCREEN (NHẬP SỐ + CHỌN NHANH 1-CLICK) -->
+          <div class="box" style="padding:6px; background: rgba(0, 245, 212, 0.05); border-color: rgba(0, 245, 212, 0.3);">
+            <div class="input-row">
+              <label id="portLabelText" style="color: #00f5d4; font-weight: bold; min-width: 65px;">Cổng Port:</label>
+              <input type="number" id="editScreenPort" class="input-field" min="1" max="999" value="1" style="font-weight:bold; font-size:12px; color:#00f5d4;">
+              <div id="portColorIndicator" style="width: 18px; height: 18px; border-radius: 50%; background: #00f5d4; margin-left: 4px; flex-shrink: 0; box-shadow: 0 0 8px rgba(0,245,212,0.5);"></div>
+            </div>
+            
+            <!-- DÃY NÚT CHỌN NHANH PORT CHO SCREEN -->
+            <div id="quickPortHint" style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">Chọn nhanh Port cho Screen:</div>
+            <div id="quickPortChips" style="display:flex; gap:4px; flex-wrap:wrap; margin-top:2px;"></div>
+          </div>
+
+          <div class="input-row">
+            <label>Kiểu đi dây:</label>
+            <select id="editScreenTopology" class="input-field">
+              <option value="snake-h">Ziczac Ngang (Snake H)</option>
+              <option value="ltr">Ngang tuần tự (Z-Order)</option>
+              <option value="snake-v">Ziczac Dọc (Snake V)</option>
+              <option value="bottom-up">Từ dưới lên (Bottom-Up)</option>
+            </select>
+          </div>
+
+          <div class="input-row" style="background: rgba(6, 182, 212, 0.08); padding: 5px; border-radius: 4px; border: 1px solid rgba(6, 182, 212, 0.25);">
+            <label style="color: var(--accent-cyan); font-weight: bold;">Số Cột × Dòng:</label>
+            <input type="number" id="editScreenCols" class="input-field" min="1" max="100" style="font-weight: bold; color: var(--accent-cyan);">
+            <span>×</span>
+            <input type="number" id="editScreenRows" class="input-field" min="1" max="100" style="font-weight: bold; color: var(--accent-cyan);">
+          </div>
+
+          <div class="input-row">
+            <label>Điểm ảnh Cab:</label>
+            <input type="number" id="editCabW" class="input-field" step="16">
+            <span>×</span>
+            <input type="number" id="editCabH" class="input-field" step="16">
+          </div>
+
+          <div class="input-row">
+            <label>Kích thước mm:</label>
+            <input type="number" id="editCabM資源mW" class="input-field" step="50">
+            <span>×</span>
+            <input type="number" id="editCabMmH" class="input-field" step="50">
+          </div>
+
+          <div class="input-row">
+            <label>Tọa độ X, Y:</label>
+            <input type="number" id="editScreenX" class="input-field">
+            <span>,</span>
+            <input type="number" id="editScreenY" class="input-field">
+          </div>
+
+          <div class="input-row">
+            <label>Màu nền:</label>
+            <input type="color" id="editScreenColor" class="input-field">
+          </div>
+
+          <div style="font-size: 10px; color: var(--text-muted); text-align: right; line-height: 1.5; margin-top:2px;" id="editScreenTotalInfo">
+            Kích thước: 0.0m × 0.0m (0 m²)<br>
+            Độ phân giải: 0 × 0 px<br>
+            Tải Port: 0 / 40 tấm (0 px)
+          </div>
+        </div>
+      </div>
+
+      <!-- 03 / VISIBILITY TOGGLES -->
+      <div>
+        <div class="section-title">03 / TÙY CHỌN HIỂN THỊ</div>
+        <div class="box">
+          <label style="display:flex; align-items:center; gap:8px; color:#00f5d4; font-weight:700;">
+            <input type="checkbox" id="chkCabling" checked> Đường dây & Đánh dấu Port (Data Path)
+          </label>
+          <label style="display:flex; align-items:center; gap:8px; color:var(--accent-yellow); font-weight:600;">
+            <input type="checkbox" id="chkNumbers" checked> Đánh dấu mã Port (P1-01, P1-02...)
+          </label>
+          <label style="display:flex; align-items:center; gap:8px; color:#ffffff; font-weight:600;">
+            <input type="checkbox" id="chkDiagonals" checked> Đường dấu chéo màn hình (Screen Cross)
+          </label>
+          <label style="display:flex; align-items:center; gap:8px; color:var(--text-secondary);">
+            <input type="checkbox" id="chkCanvasCross"> Đường dấu chéo Canvas tổng
+          </label>
+          <label style="display:flex; align-items:center; gap:8px; color:var(--accent-green);">
+            <input type="checkbox" id="chkGrid" checked> Lưới & vân Module trên Cabinet
+          </label>
+          <label style="display:flex; align-items:center; gap:8px; color:var(--accent-green);">
+            <input type="checkbox" id="chkModuleLabels" checked> Nhãn số Module (M1, M2...)
+          </label>
+          <label style="display:flex; align-items:center; gap:8px;">
+            <input type="checkbox" id="chkSectionOverlays" checked> Hiển thị nhãn tên màn hình
+          </label>
+          <label style="display:flex; align-items:center; gap:8px;">
+            <input type="checkbox" id="chkLabels"> Nhãn tên Cabinet (C01 R01)
+          </label>
+        </div>
+      </div>
+
+      <!-- 04 / CANVAS DIMENSION -->
+      <div>
+        <div class="section-title">
+          <span>04 / ĐỘ PHÂN GIẢI CANVAS TỔNG</span>
+          <span id="canvasAspectText" style="color:var(--accent-cyan); font-weight:600;"></span>
+        </div>
+        <div class="box">
+          <div class="input-row">
+            <label style="min-width: 50px;">Rộng (W):</label>
+            <input type="number" id="canvasBoundW" class="input-field" value="2560" step="16" style="font-weight:bold; color:var(--accent-cyan);">
+            <label style="min-width: 45px; text-align:right;">Cao (H):</label>
+            <input type="number" id="canvasBoundH" class="input-field" value="1152" step="16" style="font-weight:bold; color:var(--accent-cyan);">
+          </div>
+
+          <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Chuẩn độ phân giải chọn nhanh:</div>
+          <div class="preset-grid">
+            <button class="preset-btn" onclick="applyCanvasPreset(1920, 1080)">FHD 1080p</button>
+            <button class="preset-btn" onclick="applyCanvasPreset(2048, 1080)">2K DCI</button>
+            <button class="preset-btn" onclick="applyCanvasPreset(2560, 1152)">Nova LCT</button>
+            <button class="preset-btn" onclick="applyCanvasPreset(3840, 2160)">4K UHD</button>
+          </div>
+
+          <button class="btn btn-action" style="width:100%; justify-content:center; margin-top:4px;" onclick="autoFitCanvasToScreens()">
+            ⚡ Tự động ôm sát màn hình (Auto-Fit)
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Center Canvas -->
+    <div class="canvas-area">
+      <div class="canvas-toolbar">
+        <div class="mode-buttons">
+          <button class="mode-btn active" id="btnEdit" onclick="setMode('edit')">Chế độ Sắp xếp</button>
+          <button class="mode-btn cabling-mode" id="btnCabling" onclick="setMode('cabling')">⚡ Vẽ dây Port</button>
+          <button class="mode-btn" id="btnFault" onclick="setMode('fault')">Báo hỏng Module</button>
+          <button class="mode-btn delete-mode" id="btnDeleteArea" onclick="setMode('delete')">🗑️ Quét để xóa</button>
+        </div>
+        <span style="font-size: 11px; color: var(--text-secondary); font-weight: 500;" id="canvasResIndicator">CANVAS: 2560 × 1152 px (Góc 0, 0)</span>
+      </div>
+
+      <!-- THANH HUD VẼ DÂY PORT THỦ CÔNG -->
+      <div id="cablingHUD" class="cabling-hud" style="display: none;">
+        <span style="color: #fff; font-weight: 700;">Đang vẽ Port:</span>
+        <input type="number" id="hudPortNum" value="1" min="1" max="999" style="width: 50px; background: #131d2c; border: 1px solid var(--accent-cyan); color: #00f5d4; font-weight: 800; padding: 3px 6px; border-radius: 4px; outline: none;">
+        <span id="hudPortDot" style="width: 14px; height: 14px; border-radius: 50%; background: #00f5d4; display: inline-block;"></span>
+        <span style="font-size: 10px; color: var(--text-secondary);">Nhấp hoặc kéo qua từng cabinet để vẽ theo thứ tự</span>
+        <button class="btn" style="padding: 3px 8px;" onclick="reverseActiveScreenCabling()">🔄 Đảo chiều</button>
+        <button class="btn" style="padding: 3px 8px; background: #3b1419; color: #fca5a5;" onclick="clearActiveScreenCabling()">✕ Xóa dây</button>
+      </div>
+
+      <canvas id="mainCanvas"></canvas>
+
+      <!-- FOOTER -->
+      <div class="canvas-footer">
+        <div class="status-info">
+          <span>Tọa độ con trỏ: <strong id="cursorCoord">X: 0, Y: 0</strong></span>
+          <span>Chọn: <strong id="selectedInfo">0 tấm</strong></span>
+        </div>
+        <div class="zoom-controls">
+          <button class="zoom-btn" onclick="zoomOut()" title="Thu nhỏ (-)">−</button>
+          <span id="zoomLevel" style="min-width: 46px; text-align: center; font-weight: 700; color: #fff;">55%</span>
+          <button class="zoom-btn" onclick="zoomIn()" title="Phóng to (+)">+</button>
+          <button class="btn" onclick="zoom100()" style="padding: 2px 7px;">100%</button>
+          <button class="btn btn-action" onclick="fitView()" style="padding: 2px 8px;">Fit</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Inspector -->
+    <div class="sidebar right">
+      <div class="section-title" id="inspectorTitle">SELECTED CABINET</div>
+      
+      <div class="box">
+        <div class="input-row" style="background: rgba(245, 158, 11, 0.08); padding: 5px; border-radius: 4px; border: 1px solid rgba(245, 158, 11, 0.3);">
+          <label style="color: var(--accent-yellow); font-weight: bold;">Đánh dấu (#):</label>
+          <input type="text" id="propPortTag" class="input-field" readonly style="font-size: 13px; font-weight: bold; color: var(--accent-yellow); opacity: 0.95;">
+        </div>
+
+        <div class="input-row" style="background: rgba(0, 245, 212, 0.08); padding: 5px; border-radius: 4px; border: 1px solid rgba(0, 245, 212, 0.3);">
+          <label style="color:#00f5d4; font-weight:bold;">Cổng Port:</label>
+          <input type="number" id="propPort" class="input-field" min="1" max="999" style="font-weight:bold; color:#00f5d4;">
+        </div>
+
+        <div>
+          <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Gán nhanh Port cho cabinet đang chọn:</div>
+          <div id="cabinetPortChips" style="display:flex; gap:4px; flex-wrap:wrap; margin-top:4px;"></div>
+        </div>
+
+        <div class="input-row">
+          <label>Thứ tự dây:</label>
+          <input type="number" id="propCableOrder" class="input-field" min="1" style="font-weight:bold; color:#7dd3fc;" title="Thứ tự cắm cáp mạng từ Port">
+        </div>
+
+        <div class="input-row">
+          <label>Màn hình:</label>
+          <input type="text" id="propSection" class="input-field" readonly style="opacity: 0.8;">
+        </div>
+
+        <div class="input-row">
+          <label>Nhãn tên:</label>
+          <input type="text" id="propLabel" class="input-field">
+        </div>
+
+        <div class="input-row">
+          <label>Tọa độ X:</label>
+          <input type="number" id="propX" class="input-field">
+          <label style="min-width: 20px; text-align:right;">Y:</label>
+          <input type="number" id="propY" class="input-field">
+        </div>
+
+        <div class="input-row">
+          <label>Rộng (W):</label>
+          <input type="number" id="propW" class="input-field">
+          <label style="min-width: 20px; text-align:right;">Cao (H):</label>
+          <input type="number" id="propH" class="input-field">
+        </div>
+
+        <div class="input-row" style="background: rgba(16, 185, 129, 0.08); padding: 5px; border-radius: 4px; border: 1px solid rgba(16, 185, 129, 0.25);">
+          <label style="color: var(--accent-green); font-weight: bold;">Module C×D:</label>
+          <input type="number" id="propModCols" class="input-field" min="1" max="16" style="color:var(--accent-green); font-weight:bold;">
+          <span>×</span>
+          <input type="number" id="propModRows" class="input-field" min="1" max="16" style="color:var(--accent-green); font-weight:bold;">
+        </div>
+
+        <div class="input-row">
+          <label>Màu nền:</label>
+          <input type="color" id="propColor" class="input-field">
+        </div>
+
+        <div class="input-row" style="border-top: 1px solid var(--border-color); padding-top: 6px; margin-top: 4px;">
+          <label style="color:var(--accent-red); font-weight:600;">Báo hỏng:</label>
+          <label style="display:inline-flex; align-items:center; gap:6px; cursor:pointer;">
+            <input type="checkbox" id="propFault" style="width:16px; height:16px;">
+            <span>Đánh dấu lỗi cả Cabinet</span>
+          </label>
+        </div>
+
+        <div style="font-size: 10px; color: var(--text-muted); line-height: 1.4; padding: 4px 0;">
+          💡 <em>Nhấp đúp chuột vào module con trên canvas để báo hỏng / xóa lỗi module đó!</em>
+        </div>
+
+        <div style="border-top: 1px solid var(--border-color); padding-top: 6px; margin-top: 4px;">
+          <button class="btn" style="width:100%; justify-content:center; background:#451217; border-color:#7f1d1d; color:#fca5a5;" onclick="deleteSelectedCabinets()">🗑️ Xóa các Cabinet đã chọn</button>
+        </div>
+      </div>
+
+      <div class="section-title" style="margin-top: 8px;">DIAGNOSTICS & HARDWARE</div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="val" id="totalCabinets">0</div>
+          <div class="label">Tổng Cabinets</div>
+        </div>
+        <div class="stat-card">
+          <div class="val fault" id="totalFaults">0</div>
+          <div class="label">Module bị lỗi</div>
+        </div>
+      </div>
+      <div class="box" style="margin-top: 8px; font-size: 11px;">
+        <div style="display: flex; justify-content: space-between;">
+          <span style="color: var(--text-muted);">Tổng số màn hình:</span>
+          <strong id="statScreensCount" style="color: var(--accent-cyan);">0</strong>
+        </div>
+      </div>
+    </div>
+    <nav class="mobile-nav" aria-label="Chuyển khu vực chỉnh sửa">
+      <button type="button" data-mobile-view-button="canvas" aria-pressed="true" onclick="setMobileView('canvas')"><span class="tab-icon">▣</span>Canvas</button>
+      <button type="button" data-mobile-view-button="screens" aria-pressed="false" onclick="setMobileView('screens')"><span class="tab-icon">▤</span>Màn hình</button>
+      <button type="button" data-mobile-view-button="cabinet" aria-pressed="false" onclick="setMobileView('cabinet')"><span class="tab-icon">◫</span>Cabinet</button>
+    </nav>
+  </div>
+
+  <dialog id="saveProjectDialog">
+    <form id="saveProjectForm">
+      <h2 style="font-size: 14px; margin-bottom: 12px;">Lưu dự án</h2>
+      <label for="saveProjectName" style="display:block; color:var(--text-secondary); margin-bottom:6px;">Tên file:</label>
+      <input id="saveProjectName" class="input-field" type="text" required maxlength="120" autocomplete="off">
+      <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:14px;">
+        <button class="btn" type="button" onclick="document.getElementById('saveProjectDialog').close()">Hủy</button>
+        <button class="btn btn-save" type="submit">💾 Lưu</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="toast">Thông báo</div>
+
+<script>
+  const canvas = document.getElementById('mainCanvas');
+  const ctx = canvas.getContext('2d');
+
+  let canvasBounds = { w: 2560, h: 1152 };
+  let zoom = 0.55;
+  let pan = { x: 50, y: 50 };
+  let mode = 'edit';
+  
+  const MAX_PORT_LOAD_PIXELS = 655360;
+
+  let isMouseDown = false;
+  let isPanning = false;
+  let panStart = { x: 0, y: 0 };
+  let spacePressed = false;
+
+  let isDraggingGroup = false;
+  let dragGroupStartMouse = { x: 0, y: 0 };
+  let dragGroupInitPos = [];
+  let dragPreSnapshot = null;
+  let hasDragged = false;
+  let isBoxDeleting = false;
+  let isBoxSelecting = false;
+  let boxStart = { x: 0, y: 0 };
+  let boxEnd = { x: 0, y: 0 };
+
+  let isCablingDragging = false;
+  let lastConnectedCabId = null;
+
+  const screenColorPalette = ['#d90429', '#0077b6', '#7209b7', '#2a9d8f', '#e76f51', '#f39c12'];
+  let colorIdx = 0;
+
+  const presetPortColors = [
+    '#00f5d4', '#fee440', '#f72585', '#ff9e00',
+    '#7209b7', '#38b000', '#4cc9f0', '#e63946',
+    '#ff70a6', '#70d6ff', '#ffd166', '#06d6a0',
+    '#118ab2', '#b5179e', '#f3722c', '#90be6d'
+  ];
+
+  function getPortColor(portNum) {
+    const p = Math.max(1, parseInt(portNum) || 1);
+    if (p <= presetPortColors.length) return presetPortColors[p - 1];
+    const hue = Math.round(((p - 1) * 137.508) % 360);
+    return `hsl(${hue}, 95%, 60%)`;
+  }
+
+  let screens = [];
+  let activeScreenId = null;
+  let cabinets = [];
+  let selectedCabinets = [];
+  let canvasButtons = [];
+
+  // ==========================================
+  // HÀM ĐỔI CỔNG PORT TRỰC TIẾP CHO SCREEN
+  // ==========================================
+  function setScreenPort(screen, newPort) {
+    if (!screen) return;
+    const p = Math.max(1, parseInt(newPort) || 1);
+    if (mode === 'cabling') {
+      setActiveCablingPort(p);
+      syncScreenPropertiesUI();
+      render();
+      showToast(`🔌 Đang vẽ riêng Port ${p}; các cabinet khác không bị thay đổi.`);
+      return;
+    }
+    recordState();
+    screen.port = p;
+    cabinets.filter(c => c.screenId === screen.id).forEach(c => c.port = p);
+
+    syncScreenPropertiesUI();
+    updateScreenListUI();
+    syncCabinetInspector();
+    render();
+
+    showToast(`🔌 [${screen.name}] đã chuyển sang Port ${p}`);
+  }
+
+  function setActiveCablingPort(portNum) {
+    const port = Math.max(1, Math.min(999, parseInt(portNum) || 1));
+    const color = getPortColor(port);
+    const input = document.getElementById('hudPortNum');
+    input.value = port;
+    input.style.color = color;
+    document.getElementById('hudPortDot').style.background = color;
+    document.getElementById('hudPortDot').style.boxShadow = `0 0 10px ${color}`;
+
+    document.querySelectorAll('#quickPortChips .port-chip').forEach(chip => {
+      const chipPort = parseInt(chip.dataset.port, 10);
+      const chipColor = getPortColor(chipPort);
+      const isActive = chipPort === port;
+      chip.classList.toggle('active', isActive);
+      chip.style.background = isActive ? chipColor : '';
+      chip.style.color = isActive ? '#000' : chipColor;
+    });
+  }
+
+  // ==========================================
+  // CHỈNH SỬA CANVAS TỔNG
+  // ==========================================
+  function updateCanvasResIndicator() {
+    document.getElementById('canvasResIndicator').innerText = `CANVAS: ${canvasBounds.w} × ${canvasBounds.h} px (Góc 0, 0)`;
+    function gcd(a, b) { return b === 0 ? a : gcd(b, a % b); }
+    const divisor = gcd(canvasBounds.w, canvasBounds.h);
+    const rW = canvasBounds.w / divisor;
+    const rH = canvasBounds.h / divisor;
+    document.getElementById('canvasAspectText').innerText = `${rW}:${rH}`;
+  }
+
+  document.getElementById('canvasBoundW').addEventListener('input', (e) => {
+    canvasBounds.w = Math.max(64, parseInt(e.target.value) || 64);
+    updateCanvasResIndicator();
+    render();
+  });
+  document.getElementById('canvasBoundW').addEventListener('change', () => { recordState(); });
+
+  document.getElementById('canvasBoundH').addEventListener('input', (e) => {
+    canvasBounds.h = Math.max(64, parseInt(e.target.value) || 64);
+    updateCanvasResIndicator();
+    render();
+  });
+  document.getElementById('canvasBoundH').addEventListener('change', () => { recordState(); });
+
+  function applyCanvasPreset(w, h) {
+    recordState();
+    canvasBounds.w = w;
+    canvasBounds.h = h;
+    document.getElementById('canvasBoundW').value = w;
+    document.getElementById('canvasBoundH').value = h;
+    updateCanvasResIndicator();
+    fitView();
+    showToast(`📐 Đã đổi Canvas tổng: ${w} × ${h} px`);
+  }
+
+  function autoFitCanvasToScreens() {
+    if (cabinets.length === 0) {
+      alert('Chưa có màn hình LED nào trên Canvas để tự động ôm khít!');
+      return;
+    }
+    recordState();
+    let maxX = 0, maxY = 0;
+    cabinets.forEach(c => {
+      maxX = Math.max(maxX, c.x + c.w);
+      maxY = Math.max(maxY, c.y + c.h);
+    });
+    canvasBounds.w = Math.max(64, maxX);
+    canvasBounds.h = Math.max(64, maxY);
+    document.getElementById('canvasBoundW').value = canvasBounds.w;
+    document.getElementById('canvasBoundH').value = canvasBounds.h;
+    updateCanvasResIndicator();
+    fitView();
+    showToast(`🎯 Canvas đã tự động ôm khít LED: ${canvasBounds.w} × ${canvasBounds.h} px`);
+  }
+
+  // ==========================================
+  // UNDO & REDO STACK
+  // ==========================================
+  const undoStack = [];
+  const redoStack = [];
+  const MAX_HISTORY = 40;
+  let isHistoryAction = false;
+
+  function getSnapshot() {
+    return JSON.stringify({
+      screens: screens,
+      cabinets: cabinets,
+      canvasBounds: canvasBounds,
+      activeScreenId: activeScreenId
+    });
+  }
+
+  function recordState(customSnapshot = null) {
+    if (isHistoryAction) return;
+    const snap = customSnapshot || getSnapshot();
+    undoStack.push(snap);
+    if (undoStack.length > MAX_HISTORY) undoStack.shift();
+    redoStack.length = 0;
+    updateHistoryButtons();
+  }
+
+  function undo() {
+    if (undoStack.length === 0) return;
+    const current = getSnapshot();
+    redoStack.push(current);
+    const prev = undoStack.pop();
+    restoreState(prev);
+    showToast('↶ Đã trả lùi bước trước');
+  }
+
+  function redo() {
+    if (redoStack.length === 0) return;
+    const current = getSnapshot();
+    undoStack.push(current);
+    const next = redoStack.pop();
+    restoreState(next);
+    showToast('↷ Đã tiến tới bước sau');
+  }
+
+  function restoreState(snapshotJson) {
+    isHistoryAction = true;
+    try {
+      const data = JSON.parse(snapshotJson);
+      screens = data.screens || [];
+      cabinets = data.cabinets || [];
+      canvasBounds = data.canvasBounds || canvasBounds;
+      activeScreenId = data.activeScreenId || (screens[0]?.id || null);
+      selectedCabinets = cabinets.filter(c => c.screenId === activeScreenId);
+
+      document.getElementById('canvasBoundW').value = canvasBounds.w;
+      document.getElementById('canvasBoundH').value = canvasBounds.h;
+      updateCanvasResIndicator();
+
+      updateScreenListUI();
+      syncScreenPropertiesUI();
+      syncCabinetInspector();
+      render();
+    } finally {
+      isHistoryAction = false;
+      updateHistoryButtons();
+    }
+  }
+
+  function updateHistoryButtons() {
+    document.getElementById('btnUndo').disabled = (undoStack.length === 0);
+    document.getElementById('btnRedo').disabled = (redoStack.length === 0);
+  }
+
+  // ==========================================
+  // ZOOM & PAN ENGINE
+  // ==========================================
+  function updateZoomUI() {
+    document.getElementById('zoomLevel').innerText = Math.round(zoom * 100) + '%';
+  }
+
+  function zoomIn() { zoomToCenter(1.2); }
+  function zoomOut() { zoomToCenter(0.833); }
+  function zoom100() { zoomToCenter(1.0 / zoom); }
+
+  function zoomToCenter(factor) {
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    const worldX = (centerX - pan.x) / zoom;
+    const worldY = (centerY - pan.y) / zoom;
+    const newZoom = Math.min(Math.max(0.05, zoom * factor), 5.0);
+
+    pan.x = centerX - worldX * newZoom;
+    pan.y = centerY - worldY * newZoom;
+    zoom = newZoom;
+
+    updateZoomUI();
+    render();
+  }
+
+  function fitView() {
+    let minX = 0, minY = 0, maxX = 0, maxY = 0;
+    cabinets.forEach(c => {
+      maxX = Math.max(maxX, c.x + c.w);
+      maxY = Math.max(maxY, c.y + c.h);
+    });
+
+    const targetW = Math.max(maxX, canvasBounds.w, 100);
+    const targetH = Math.max(maxY, canvasBounds.h, 100);
+
+    const pad = 60;
+    const availW = Math.max(100, canvas.width - pad * 2);
+    const availH = Math.max(100, canvas.height - pad * 2);
+
+    zoom = Math.min(availW / targetW, availH / targetH, 1.2);
+    zoom = Math.max(0.08, zoom);
+
+    pan.x = (canvas.width - targetW * zoom) / 2;
+    pan.y = (canvas.height - targetH * zoom) / 2;
+
+    updateZoomUI();
+    render();
+  }
+
+  canvas.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    const rect = canvas.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+
+    const worldX = (mouseX - pan.x) / zoom;
+    const worldY = (mouseY - pan.y) / zoom;
+
+    const factor = e.deltaY < 0 ? 1.15 : 0.869;
+    const newZoom = Math.min(Math.max(0.05, zoom * factor), 5.0);
+
+    pan.x = mouseX - worldX * newZoom;
+    pan.y = mouseY - worldY * newZoom;
+    zoom = newZoom;
+
+    updateZoomUI();
+    render();
+  }, { passive: false });
+
+  window.addEventListener('keydown', (e) => {
+    if (e.code === 'Space' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'SELECT') {
+      e.preventDefault();
+      spacePressed = true;
+      if (!isMouseDown) canvas.style.cursor = 'grab';
+    }
+  });
+
+  window.addEventListener('keyup', (e) => {
+    if (e.code === 'Space') {
+      spacePressed = false;
+      if (!isMouseDown) canvas.style.cursor = 'default';
+    }
+  });
+
+  canvas.addEventListener('contextmenu', e => e.preventDefault());
+
+  // ==========================================
+  // THÊM & DỰNG MÀN HÌNH / MODULE
+  // ==========================================
+  function addScreenByDirection(direction) {
+    const base = screens.find(s => s.id === activeScreenId) || screens[0];
+    if (!base) { createNewScreen(); return; }
+
+    recordState();
+
+    const nextCount = screens.length + 1;
+    const defaultCols = 4;
+    const defaultRows = 2;
+    const cabW = base.cabW;
+    const cabH = base.cabH;
+    const newW = defaultCols * cabW;
+    const newH = defaultRows * cabH;
+    const baseW = base.cols * base.cabW;
+    const baseH = base.rows * base.cabH;
+    const gap = Math.max(0, parseInt(document.getElementById('screenGapInput').value) || 0);
+
+    let targetX = base.x;
+    let targetY = base.y;
+
+    if (direction === 'right') {
+      targetX = base.x + baseW + gap;
+      targetY = base.y;
+    } else if (direction === 'bottom') {
+      targetX = base.x;
+      targetY = base.y + baseH + gap;
+    } else if (direction === 'left') {
+      targetX = base.x - newW - gap;
+      targetY = base.y;
+      if (targetX < 0) {
+        const shiftX = Math.abs(targetX);
+        screens.forEach(s => s.x += shiftX);
+        cabinets.forEach(c => c.x += shiftX);
+        targetX = 0;
+      }
+    } else if (direction === 'top') {
+      targetX = base.x;
+      targetY = base.y - newH - gap;
+      if (targetY < 0) {
+        const shiftY = Math.abs(targetY);
+        screens.forEach(s => s.y += shiftY);
+        cabinets.forEach(c => c.y += shiftY);
+        targetY = 0;
+      }
+    }
+
+    const nextColor = screenColorPalette[colorIdx % screenColorPalette.length];
+    colorIdx++;
+
+    const newScreen = {
+      id: 'screen_' + Date.now() + Math.random(),
+      name: `SCREEN ${nextCount}`,
+      customText: `MÀN HÌNH ${nextCount}`,
+      textStyle: 'banner',
+      port: nextCount,
+      topology: 'snake-h',
+      cols: defaultCols,
+      rows: defaultRows,
+      cabW: cabW,
+      cabH: cabH,
+      mmW: base.mmW || 500,
+      mmH: base.mmH || 500,
+      x: targetX,
+      y: targetY,
+      color: nextColor,
+      modCols: base.modCols || 2,
+      modRows: base.modRows || 2
+    };
+
+    screens.push(newScreen);
+    activeScreenId = newScreen.id;
+
+    rebuildScreenCabinets(newScreen);
+    updateScreenListUI();
+    syncScreenPropertiesUI();
+    render();
+
+    const dirNameMap = { left: 'Sát Trái', right: 'Sát Phải', top: 'Sát Trên', bottom: 'Sát Dưới' };
+    showToast(`✨ Đã ghép ${dirNameMap[direction]} [Port ${newScreen.port}]!`);
+  }
+
+  function createNewScreen() {
+    recordState();
+    const nextNum = screens.length + 1;
+    let maxY = 0;
+    screens.forEach(s => { maxY = Math.max(maxY, s.y + s.rows * s.cabH); });
+
+    const startY = screens.length === 0 ? 0 : maxY;
+
+    const newScreen = {
+      id: 'screen_' + Date.now() + Math.random(),
+      name: nextNum === 1 ? 'MAIN SCREEN' : `SCREEN ${nextNum}`,
+      customText: nextNum === 1 ? 'MAIN SCREEN' : `MÀN HÌNH ${nextNum}`,
+      textStyle: 'banner',
+      port: nextNum,
+      topology: 'snake-h',
+      cols: nextNum === 1 ? 6 : 4,
+      rows: nextNum === 1 ? 3 : 2,
+      cabW: 128,
+      cabH: 128,
+      mmW: 500,
+      mmH: 500,
+      x: 0,
+      y: startY,
+      color: screenColorPalette[colorIdx % screenColorPalette.length],
+      modCols: 2,
+      modRows: 2
+    };
+    colorIdx++;
+
+    screens.push(newScreen);
+    activeScreenId = newScreen.id;
+
+    rebuildScreenCabinets(newScreen);
+    updateScreenListUI();
+    syncScreenPropertiesUI();
+    render();
+  }
+
+  function rebuildScreenCabinets(screen) {
+    const oldFaults = {};
+    const oldModuleFaults = {};
+
+    cabinets.filter(c => c.screenId === screen.id).forEach(c => {
+      oldFaults[`${c.colIdx}_${c.rowIdx}`] = c.fault;
+      if (c.faultModules) oldModuleFaults[`${c.colIdx}_${c.rowIdx}`] = c.faultModules;
+    });
+
+    cabinets = cabinets.filter(c => c.screenId !== screen.id);
+    const orderList = [];
+
+    if (screen.topology === 'snake-h') {
+      for (let r = 1; r <= screen.rows; r++) {
+        if (r % 2 === 1) {
+          for (let c = 1; c <= screen.cols; c++) orderList.push({ c, r });
+        } else {
+          for (let c = screen.cols; c >= 1; c--) orderList.push({ c, r });
+        }
+      }
+    } else if (screen.topology === 'ltr') {
+      for (let r = 1; r <= screen.rows; r++) {
+        for (let c = 1; c <= screen.cols; c++) orderList.push({ c, r });
+      }
+    } else if (screen.topology === 'snake-v') {
+      for (let c = 1; c <= screen.cols; c++) {
+        if (c % 2 === 1) {
+          for (let r = 1; r <= screen.rows; r++) orderList.push({ c, r });
+        } else {
+          for (let r = screen.rows; r >= 1; r--) orderList.push({ c, r });
+        }
+      }
+    } else if (screen.topology === 'bottom-up') {
+      for (let r = screen.rows; r >= 1; r--) {
+        const fromBottom = screen.rows - r;
+        if (fromBottom % 2 === 0) {
+          for (let c = 1; c <= screen.cols; c++) orderList.push({ c, r });
+        } else {
+          for (let c = screen.cols; c >= 1; c--) orderList.push({ c, r });
+        }
+      }
+    }
+
+    const newCabs = [];
+    orderList.forEach((pos, idx) => {
+      const c = pos.c;
+      const r = pos.r;
+      const cStr = c < 10 ? `0${c}` : `${c}`;
+      const rStr = r < 10 ? `0${r}` : `${r}`;
+      const fModules = oldModuleFaults[`${c}_${r}`] || [];
+
+      newCabs.push({
+        id: Date.now() + Math.random() + idx,
+        screenId: screen.id,
+        section: screen.name,
+        port: screen.port || 1,
+        cableOrder: 0,
+        colIdx: c,
+        rowIdx: r,
+        index: idx + 1,
+        label: `${screen.name} C${cStr} R${rStr}`,
+        x: screen.x + (c - 1) * screen.cabW,
+        y: screen.y + (r - 1) * screen.cabH,
+        w: screen.cabW,
+        h: screen.cabH,
+        cols: screen.modCols || 2,
+        rows: screen.modRows || 2,
+        color: screen.color,
+        fault: oldFaults[`${c}_${r}`] || false,
+        faultModules: fModules
+      });
+    });
+
+    cabinets.push(...newCabs);
+    selectedCabinets = newCabs;
+  }
+
+  function reverseActiveScreenCabling() {
+    const s = screens.find(item => item.id === activeScreenId);
+    if (!s) return;
+    recordState();
+    const screenCabs = cabinets.filter(c => c.screenId === s.id && c.cableOrder > 0);
+    const maxOrder = screenCabs.length;
+    screenCabs.forEach(c => {
+      c.cableOrder = (maxOrder - c.cableOrder) + 1;
+      c.index = c.cableOrder;
+    });
+    syncCabinetInspector();
+    render();
+    showToast(`🔄 Đã đảo chiều dây mạng màn hình [${s.name}]`);
+  }
+
+  function clearActiveScreenCabling() {
+    const s = screens.find(item => item.id === activeScreenId);
+    if (!s) return;
+    recordState();
+    const screenCabs = cabinets.filter(c => c.screenId === s.id);
+    screenCabs.forEach(c => {
+      c.cableOrder = 0;
+      c.index = 0;
+    });
+    syncCabinetInspector();
+    render();
+    showToast(`✕ Đã xóa toàn bộ dây mạng [${s.name}]`);
+  }
+
+  function connectCabinetToPort(cab, portNum) {
+    if (!cab) return;
+    if (cab.id === lastConnectedCabId) return;
+
+    if (cab.port === portNum && cab.cableOrder > 0) return;
+
+    const cabPixels = cab.w * cab.h;
+    let assignedPort = Math.max(1, parseInt(portNum) || 1);
+    if (cabPixels <= MAX_PORT_LOAD_PIXELS) {
+      const getPortLoad = port => cabinets
+        .filter(c => c.id !== cab.id && c.port === port && c.cableOrder > 0)
+        .reduce((sum, c) => sum + c.w * c.h, 0);
+      while (assignedPort < 999 && getPortLoad(assignedPort) + cabPixels > MAX_PORT_LOAD_PIXELS) {
+        assignedPort++;
+      }
+      if (getPortLoad(assignedPort) + cabPixels > MAX_PORT_LOAD_PIXELS) {
+        showToast('⚠️ Các Port 1–999 đều đã đủ tải, không thể nối cabinet này.');
+        return;
+      }
+    }
+
+    const samePortCabs = cabinets.filter(c => c.id !== cab.id && c.port === assignedPort && c.cableOrder > 0);
+    const nextOrder = samePortCabs.reduce((max, c) => Math.max(max, c.cableOrder), 0) + 1;
+
+    recordState();
+    cab.port = assignedPort;
+    cab.cableOrder = nextOrder;
+    cab.index = nextOrder;
+    lastConnectedCabId = cab.id;
+
+    if (assignedPort !== portNum) {
+      setActiveCablingPort(assignedPort);
+      showToast(`🔌 Port ${portNum} đủ tải, tự ngắt dây sang Port ${assignedPort}`);
+    }
+
+    selectedCabinets = [cab];
+    syncScreenPropertiesUI();
+    syncCabinetInspector();
+    render();
+  }
+
+  function cleanEmptyScreens() {
+    const activeScreenIds = new Set(cabinets.map(c => c.screenId));
+    screens = screens.filter(s => activeScreenIds.has(s.id));
+    if (!activeScreenIds.has(activeScreenId)) {
+      activeScreenId = screens.length > 0 ? screens[0].id : null;
+    }
+    updateScreenListUI();
+    syncScreenPropertiesUI();
+    syncCabinetInspector();
+  }
+
+  function autoAssignIndices() {
+    let idx = 1;
+    cabinets.forEach(cab => { cab.index = idx++; });
+  }
+
+  function updateScreenListUI() {
+    const container = document.getElementById('screenListContainer');
+    container.innerHTML = '';
+
+    screens.forEach(s => {
+      const totalW = s.cols * s.cabW;
+      const totalH = s.rows * s.cabH;
+      const totalCabs = s.cols * s.rows;
+      const portCol = getPortColor(s.port || 1);
+
+      const meterW = ((s.cols * (s.mmW || 500)) / 1000).toFixed(2);
+      const meterH = ((s.rows * (s.mmH || 500)) / 1000).toFixed(2);
+
+      const card = document.createElement('div');
+      card.className = `screen-card ${s.id === activeScreenId ? 'active' : ''}`;
+      card.innerHTML = `
+        <div class="screen-card-info">
+          <div>
+            <span class="screen-color-dot" style="background:${s.color}"></span>
+            <strong>${s.customText || s.name} 
+              <span class="port-chip active" style="color:${portCol}; border-color:${portCol};" onclick="event.stopPropagation(); cycleScreenPort('${s.id}')" title="Click để chuyển Port kế tiếp">[P${s.port}]</span>
+            </strong>
+          </div>
+          <span>${meterW}m × ${meterH}m · ${totalW}×${totalH} px (${totalCabs} tấm)</span>
+        </div>
+        <button class="screen-del-btn" title="Xóa màn hình này" onclick="deleteScreen('${s.id}', event)">✕</button>
+      `;
+
+      card.onclick = () => selectScreen(s.id);
+      container.appendChild(card);
+    });
+
+    document.getElementById('screenCountBadge').innerText = screens.length;
+    document.getElementById('statScreensCount').innerText = screens.length;
+  }
+
+  // Click vào huy hiệu Port trên card để chuyển nhanh sang Port kế tiếp
+  function cycleScreenPort(screenId) {
+    const s = screens.find(item => item.id === screenId);
+    if (!s) return;
+    const currentPort = mode === 'cabling'
+      ? Math.max(1, parseInt(document.getElementById('hudPortNum').value) || 1)
+      : s.port;
+    const nextP = (currentPort % 16) + 1;
+    setScreenPort(s, nextP);
+  }
+
+  function selectScreen(screenId) {
+    activeScreenId = screenId;
+    const targetScreen = screens.find(s => s.id === screenId);
+    if (targetScreen) {
+      selectedCabinets = cabinets.filter(c => c.screenId === screenId);
+      updateScreenListUI();
+      syncScreenPropertiesUI();
+      syncCabinetInspector();
+      render();
+    }
+  }
+
+  function deleteScreen(screenId, event) {
+    if (event) event.stopPropagation();
+    const target = screens.find(s => s.id === screenId);
+    if (!target) return;
+
+    if (confirm(`Bạn có chắc muốn xóa màn hình [${target.customText || target.name}]?`)) {
+      recordState();
+      screens = screens.filter(s => s.id !== screenId);
+      cabinets = cabinets.filter(c => c.screenId !== screenId);
+
+      if (activeScreenId === screenId) {
+        activeScreenId = screens.length > 0 ? screens[0].id : null;
+      }
+
+      updateScreenListUI();
+      syncScreenPropertiesUI();
+      selectedCabinets = cabinets.filter(c => c.screenId === activeScreenId);
+      syncCabinetInspector();
+      render();
+      showToast('Đã xóa màn hình!');
+    }
+  }
+
+  function syncScreenPropertiesUI() {
+    const box = document.getElementById('screenEditBox');
+    const s = screens.find(item => item.id === activeScreenId);
+
+    if (!s) {
+      box.style.opacity = '0.35';
+      box.style.pointerEvents = 'none';
+      return;
+    }
+
+    box.style.opacity = '1';
+    box.style.pointerEvents = 'auto';
+
+    const presetSelect = document.getElementById('editScreenCabPreset');
+    if (s.cabW === 128 && s.cabH === 128) presetSelect.value = '500x500';
+    else if (s.cabW === 128 && s.cabH === 256) presetSelect.value = '500x1000';
+    else presetSelect.value = 'custom';
+
+    document.getElementById('editScreenCustomText').value = s.customText || s.name;
+    document.getElementById('editScreenTextStyle').value = s.textStyle || 'banner';
+    document.getElementById('editScreenName').value = s.name;
+    
+    document.getElementById('editCabW').value = s.cabW;
+    document.getElementById('editCabH').value = s.cabH;
+    document.getElementById('editCabM資源mW').value = s.mmW || 500;
+    document.getElementById('editCabMmH').value = s.mmH || 500;
+
+    const screenPort = Math.max(1, parseInt(s.port) || 1);
+    const currentPort = mode === 'cabling'
+      ? Math.max(1, parseInt(document.getElementById('hudPortNum').value) || screenPort)
+      : screenPort;
+    const portCol = getPortColor(currentPort);
+    
+    const portInput = document.getElementById('editScreenPort');
+    portInput.value = currentPort;
+    portInput.style.color = portCol;
+    document.getElementById('portLabelText').style.color = portCol;
+    document.getElementById('portColorIndicator').style.background = portCol;
+    document.getElementById('portColorIndicator').style.boxShadow = `0 0 8px ${portCol}`;
+
+    // RENDER CÁC NÚT CHỌN PORT NHANH 1-CLICK TRONG SIDEBAR
+    const chipsContainer = document.getElementById('quickPortChips');
+    chipsContainer.innerHTML = '';
+    const activePort = currentPort;
+    const maxQuickPort = Math.max(6, currentPort + 2, activePort + 2);
+    document.getElementById('quickPortHint').textContent = mode === 'cabling'
+      ? 'Chọn Port đang vẽ (không đổi cabinet khác):'
+      : 'Chọn nhanh Port cho Screen:';
+
+    for (let p = 1; p <= maxQuickPort; p++) {
+      const col = getPortColor(p);
+      const chip = document.createElement('span');
+      chip.className = `port-chip ${p === activePort ? 'active' : ''}`;
+      chip.dataset.port = p;
+      chip.innerText = `P${p}`;
+      chip.style.borderColor = col;
+      if (p === activePort) {
+        chip.style.background = col;
+        chip.style.color = '#000';
+      } else {
+        chip.style.color = col;
+      }
+      chip.onclick = () => setScreenPort(s, p);
+      chipsContainer.appendChild(chip);
+    }
+
+    if (mode !== 'cabling') setActiveCablingPort(currentPort);
+
+    document.getElementById('editScreenTopology').value = s.topology || 'snake-h';
+    document.getElementById('editScreenCols').value = s.cols;
+    document.getElementById('editScreenRows').value = s.rows;
+    document.getElementById('editScreenX').value = s.x;
+    document.getElementById('editScreenY').value = s.y;
+    document.getElementById('editScreenColor').value = s.color;
+
+    const totalW = s.cols * s.cabW;
+    const totalH = s.rows * s.cabH;
+
+    const meterW = ((s.cols * (s.mmW || 500)) / 1000);
+    const meterH = ((s.rows * (s.mmH || 500)) / 1000);
+    const areaM2 = (meterW * meterH).toFixed(2);
+
+    const allPortCabs = cabinets.filter(c => (c.port || 1) === currentPort);
+    const allPortPixels = allPortCabs.reduce((sum, c) => sum + (c.w * c.h), 0);
+    const loadPercent = Math.round((allPortPixels / MAX_PORT_LOAD_PIXELS) * 100);
+
+    const cabinPixels = Math.max(1, s.cabW * s.cabH);
+    const maxCabs = Math.floor(MAX_PORT_LOAD_PIXELS / cabinPixels);
+    const equivalentCabins = allPortPixels / cabinPixels;
+    const cabinSize = `${s.mmW || 500}×${s.mmH || 500}`;
+
+    document.getElementById('editScreenTotalInfo').innerHTML = `
+      Kích thước thực tế: <strong>${meterW.toFixed(2)}m × ${meterH.toFixed(2)}m (${areaM2} m²)</strong><br>
+      Độ phân giải: <strong>${totalW} × ${totalH} px</strong> (${s.cols * s.rows} tấm)<br>
+      Tải Port ${currentPort}: <span style="color:${loadPercent > 100 ? 'var(--accent-red)' : portCol}; font-weight:bold;">${equivalentCabins.toLocaleString('vi-VN', { maximumFractionDigits: 1 })}/${maxCabs} cabin ${cabinSize} quy đổi (${allPortCabs.length} cabinet thực tế · ${allPortPixels.toLocaleString()} / ${MAX_PORT_LOAD_PIXELS.toLocaleString()} px - ${loadPercent}%)</span>
+    `;
+  }
+
+  // Đổi preset cabin
+  document.getElementById('editScreenCabPreset').addEventListener('change', (e) => {
+    const s = screens.find(item => item.id === activeScreenId);
+    if (!s) return;
+    recordState();
+
+    if (e.target.value === '500x500') {
+      s.cabW = 128;
+      s.cabH = 128;
+      s.mmW = 500;
+      s.mmH = 500;
+      s.modCols = 2;
+      s.modRows = 2;
+      showToast('📏 Đã chọn Cabin 500×500 mm (128×128 px) - Max 40 tấm/Port');
+    } else if (e.target.value === '500x1000') {
+      s.cabW = 128;
+      s.cabH = 256;
+      s.mmW = 500;
+      s.mmH = 1000;
+      s.modCols = 2;
+      s.modRows = 4;
+      showToast('📏 Đã chọn Cabin 500×1000 mm (128×256 px) - Max 20 tấm/Port');
+    }
+
+    rebuildScreenCabinets(s);
+    syncScreenPropertiesUI();
+    syncCabinetInspector();
+    render();
+  });
+
+  document.getElementById('editScreenCustomText').addEventListener('input', (e) => {
+    const s = screens.find(item => item.id === activeScreenId);
+    if (s) {
+      s.customText = e.target.value;
+      updateScreenListUI();
+      render();
+    }
+  });
+
+  document.getElementById('editScreenTextStyle').addEventListener('change', (e) => {
+    const s = screens.find(item => item.id === activeScreenId);
+    if (s) {
+      recordState();
+      s.textStyle = e.target.value;
+      render();
+    }
+  });
+
+  document.getElementById('editScreenPort').addEventListener('input', (e) => {
+    const s = screens.find(item => item.id === activeScreenId);
+    if (s) {
+      const newPort = Math.max(1, parseInt(e.target.value) || 1);
+      setScreenPort(s, newPort);
+    }
+  });
+
+  document.getElementById('hudPortNum').addEventListener('input', (e) => {
+    const newPort = Math.max(1, Math.min(999, parseInt(e.target.value) || 1));
+    setActiveCablingPort(newPort);
+    syncScreenPropertiesUI();
+  });
+
+  document.getElementById('editScreenTopology').addEventListener('change', (e) => {
+    const s = screens.find(item => item.id === activeScreenId);
+    if (s) {
+      recordState();
+      s.topology = e.target.value;
+      rebuildScreenCabinets(s);
+      syncCabinetInspector();
+      render();
+    }
+  });
+
+  document.getElementById('editScreenName').addEventListener('input', (e) => {
+    const s = screens.find(item => item.id === activeScreenId);
+    if (s) {
+      s.name = e.target.value.trim() || 'SCREEN';
+      cabinets.filter(c => c.screenId === s.id).forEach(c => c.section = s.name);
+      updateScreenListUI();
+      render();
+    }
+  });
+
+  document.getElementById('editScreenCols').addEventListener('change', (e) => {
+    const s = screens.find(item => item.id === activeScreenId);
+    if (s) {
+      recordState();
+      s.cols = Math.max(1, parseInt(e.target.value) || 1);
+      rebuildScreenCabinets(s);
+      updateScreenListUI();
+      syncScreenPropertiesUI();
+      render();
+    }
+  });
+
+  document.getElementById('editScreenRows').addEventListener('change', (e) => {
+    const s = screens.find(item => item.id === activeScreenId);
+    if (s) {
+      recordState();
+      s.rows = Math.max(1, parseInt(e.target.value) || 1);
+      rebuildScreenCabinets(s);
+      updateScreenListUI();
+      syncScreenPropertiesUI();
+      render();
+    }
+  });
+
+  document.getElementById('editCabW').addEventListener('change', (e) => {
+    const s = screens.find(item => item.id === activeScreenId);
+    if (s) {
+      recordState();
+      s.cabW = Math.max(16, parseInt(e.target.value) || 16);
+      rebuildScreenCabinets(s);
+      updateScreenListUI();
+      syncScreenPropertiesUI();
+      render();
+    }
+  });
+
+  document.getElementById('editCabH').addEventListener('change', (e) => {
+    const s = screens.find(item => item.id === activeScreenId);
+    if (s) {
+      recordState();
+      s.cabH = Math.max(16, parseInt(e.target.value) || 16);
+      rebuildScreenCabinets(s);
+      updateScreenListUI();
+      syncScreenPropertiesUI();
+      render();
+    }
+  });
+
+  document.getElementById('editCabM資源mW').addEventListener('change', (e) => {
+    const s = screens.find(item => item.id === activeScreenId);
+    if (s) {
+      recordState();
+      s.mmW = Math.max(50, parseInt(e.target.value) || 500);
+      updateScreenListUI();
+      syncScreenPropertiesUI();
+      render();
+    }
+  });
+
+  document.getElementById('editCabMmH').addEventListener('change', (e) => {
+    const s = screens.find(item => item.id === activeScreenId);
+    if (s) {
+      recordState();
+      s.mmH = Math.max(50, parseInt(e.target.value) || 500);
+      updateScreenListUI();
+      syncScreenPropertiesUI();
+      render();
+    }
+  });
+
+  document.getElementById('editScreenX').addEventListener('change', (e) => {
+    const s = screens.find(item => item.id === activeScreenId);
+    if (s) {
+      recordState();
+      s.x = parseInt(e.target.value) || 0;
+      rebuildScreenCabinets(s);
+      updateScreenListUI();
+      render();
+    }
+  });
+
+  document.getElementById('editScreenY').addEventListener('change', (e) => {
+    const s = screens.find(item => item.id === activeScreenId);
+    if (s) {
+      recordState();
+      s.y = parseInt(e.target.value) || 0;
+      rebuildScreenCabinets(s);
+      updateScreenListUI();
+      render();
+    }
+  });
+
+  document.getElementById('editScreenColor').addEventListener('change', (e) => {
+    const s = screens.find(item => item.id === activeScreenId);
+    if (s) {
+      recordState();
+      s.color = e.target.value;
+      cabinets.filter(c => c.screenId === s.id).forEach(c => c.color = s.color);
+      updateScreenListUI();
+      render();
+    }
+  });
+
+  // ==========================================
+  // VẼ CANVAS & BỘ CHỌN PORT TRÊN CANVAS
+  // ==========================================
+  function render() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    ctx.save();
+    ctx.translate(pan.x, pan.y);
+    ctx.scale(zoom, zoom);
+
+    canvasButtons = [];
+
+    ctx.strokeStyle = '#223249';
+    ctx.lineWidth = 2 / zoom;
+    ctx.setLineDash([8 / zoom, 8 / zoom]);
+    ctx.strokeRect(0, 0, canvasBounds.w, canvasBounds.h);
+    ctx.setLineDash([]);
+
+    const showNumbers = document.getElementById('chkNumbers').checked;
+    const showLabels = document.getElementById('chkLabels').checked;
+    const showOverlays = document.getElementById('chkSectionOverlays').checked;
+    const showCabling = document.getElementById('chkCabling').checked;
+    const showGrid = document.getElementById('chkGrid').checked;
+    const showModuleLabels = document.getElementById('chkModuleLabels').checked;
+    const showDiagonals = document.getElementById('chkDiagonals').checked;
+    const showCanvasCross = document.getElementById('chkCanvasCross').checked;
+
+    if (showCanvasCross) {
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+      ctx.lineWidth = 1.5 / zoom;
+      ctx.setLineDash([6 / zoom, 6 / zoom]);
+      ctx.beginPath();
+      ctx.moveTo(0, 0); ctx.lineTo(canvasBounds.w, canvasBounds.h);
+      ctx.moveTo(canvasBounds.w, 0); ctx.lineTo(0, canvasBounds.h);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    let moduleFaultCount = 0;
+
+    // 1. VẼ CABINETS & ĐÁNH DẤU
+    cabinets.forEach(cab => {
+      const isSelected = selectedCabinets.includes(cab);
+      const modCols = Math.max(1, cab.cols || 2);
+      const modRows = Math.max(1, cab.rows || 2);
+      const mw = cab.w / modCols;
+      const mh = cab.h / modRows;
+      const portCol = getPortColor(cab.port || 1);
+
+      for (let c = 0; c < modCols; c++) {
+        for (let r = 0; r < modRows; r++) {
+          const modIdx = r * modCols + c;
+          const isModFault = (cab.fault) || (cab.faultModules && cab.faultModules.includes(modIdx));
+
+          if (isModFault) moduleFaultCount++;
+
+          const mx = cab.x + c * mw;
+          const my = cab.y + r * mh;
+
+          const isCheckered = (c + r) % 2 === 0;
+          ctx.fillStyle = isCheckered ? cab.color : '#0a0e16';
+          ctx.fillRect(mx, my, mw, mh);
+
+          if (isModFault) {
+            ctx.fillStyle = 'rgba(239, 68, 68, 0.78)';
+            ctx.fillRect(mx, my, mw, mh);
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 1.8 / zoom;
+            ctx.beginPath();
+            ctx.moveTo(mx, my); ctx.lineTo(mx + mw, my + mh);
+            ctx.moveTo(mx + mw, my); ctx.lineTo(mx, my + mh);
+            ctx.stroke();
+          }
+
+          if (showGrid) {
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.22)';
+            ctx.lineWidth = 1 / zoom;
+            ctx.strokeRect(mx, my, mw, mh);
+          }
+
+          if (showModuleLabels && mw * zoom > 22 && mh * zoom > 16) {
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.55)';
+            ctx.font = `bold ${Math.max(8, 9 / zoom)}px sans-serif`;
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'top';
+            ctx.fillText(`M${modIdx + 1}`, mx + 3 / zoom, my + 3 / zoom);
+          }
+        }
+      }
+
+      if (isSelected) {
+        ctx.fillStyle = 'rgba(6, 182, 212, 0.22)';
+        ctx.fillRect(cab.x, cab.y, cab.w, cab.h);
+        ctx.strokeStyle = '#06b6d4';
+        ctx.lineWidth = 3 / zoom;
+      } else {
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1.5 / zoom;
+      }
+      ctx.strokeRect(cab.x, cab.y, cab.w, cab.h);
+
+      // Đánh dấu mã Port góc Cabinet (P1, P2...)
+      if (showCabling && cab.cableOrder > 0) {
+        const tagW = 28 / zoom;
+        const tagH = 14 / zoom;
+        ctx.fillStyle = 'rgba(9, 13, 20, 0.85)';
+        ctx.beginPath();
+        ctx.roundRect(cab.x + 3 / zoom, cab.y + 3 / zoom, tagW, tagH, 3 / zoom);
+        ctx.fill();
+        ctx.strokeStyle = portCol;
+        ctx.lineWidth = 1 / zoom;
+        ctx.stroke();
+
+        ctx.fillStyle = portCol;
+        ctx.font = `bold ${Math.round(8 / zoom)}px sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(`P${cab.port}`, cab.x + 3 / zoom + tagW / 2, cab.y + 3 / zoom + tagH / 2);
+      }
+
+      // Đánh dấu thứ tự Port ở giữa Cabinet (P1-01, P1-02...)
+      if (showNumbers && cab.cableOrder !== undefined && cab.cableOrder > 0) {
+        const centerX = cab.x + cab.w / 2;
+        const centerY = cab.y + cab.h / 2;
+        
+        const orderStr = cab.cableOrder < 10 ? `0${cab.cableOrder}` : `${cab.cableOrder}`;
+        const markText = `P${cab.port}-${orderStr}`;
+        const badgeW = 54 / zoom;
+        const badgeH = 22 / zoom;
+
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.82)';
+        ctx.beginPath();
+        ctx.roundRect(centerX - badgeW / 2, centerY - badgeH / 2, badgeW, badgeH, 4 / zoom);
+        ctx.fill();
+        ctx.strokeStyle = portCol;
+        ctx.lineWidth = 1.5 / zoom;
+        ctx.stroke();
+
+        ctx.fillStyle = portCol;
+        ctx.font = `bold ${Math.round(11 / zoom)}px sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(markText, centerX, centerY);
+      }
+
+      if (showLabels) {
+        ctx.fillStyle = '#ffffff';
+        ctx.font = `bold ${Math.max(10, 11 / zoom)}px sans-serif`;
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'top';
+        ctx.fillText(cab.label, cab.x + 6 / zoom, cab.y + cab.h - 18 / zoom);
+      }
+    });
+
+    // 2. VẼ DẤU CHÉO MÀN HÌNH
+    if (showDiagonals) {
+      screens.forEach(s => {
+        const totalW = s.cols * s.cabW;
+        const totalH = s.rows * s.cabH;
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.28)';
+        ctx.lineWidth = 1.2 / zoom;
+        ctx.beginPath();
+        ctx.moveTo(s.x, s.y); ctx.lineTo(s.x + totalW, s.y + totalH);
+        ctx.moveTo(s.x + totalW, s.y); ctx.lineTo(s.x, s.y + totalH);
+        ctx.stroke();
+      });
+    }
+
+    // 3. VẼ ĐƯỜNG DÂY TÍN HIỆU
+    if (showCabling) {
+      screens.forEach(screen => {
+        const portGroups = new Map();
+        cabinets
+          .filter(c => c.screenId === screen.id && c.cableOrder > 0)
+          .forEach(cab => {
+            if (!portGroups.has(cab.port)) portGroups.set(cab.port, []);
+            portGroups.get(cab.port).push(cab);
+          });
+
+        portGroups.forEach((screenCabs, port) => {
+          screenCabs.sort((a, b) => a.cableOrder - b.cableOrder);
+          if (screenCabs.length === 0) return;
+          const cableColor = getPortColor(port);
+          ctx.save();
+          ctx.strokeStyle = cableColor;
+          ctx.shadowColor = cableColor;
+          ctx.shadowBlur = 8 / zoom;
+          ctx.lineWidth = 2.8 / zoom;
+
+          for (let i = 0; i < screenCabs.length - 1; i++) {
+            const cur = screenCabs[i];
+            const next = screenCabs[i + 1];
+
+            const x1 = cur.x + cur.w / 2;
+            const y1 = cur.y + cur.h / 2;
+            const x2 = next.x + next.w / 2;
+            const y2 = next.y + next.h / 2;
+
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+
+            drawArrowHead(x1, y1, x2, y2, cableColor);
+          }
+          ctx.restore();
+
+          const firstCab = screenCabs[0];
+          drawPortBadge(firstCab.x + 8 / zoom, firstCab.y + firstCab.h - 18 / zoom, `P${port} IN`, '#10b981');
+
+          const lastCab = screenCabs[screenCabs.length - 1];
+          drawPortBadge(lastCab.x + lastCab.w - 52 / zoom, lastCab.y + lastCab.h - 18 / zoom, `P${port} OUT`, '#ef4444');
+        });
+      });
+    }
+
+    // 4. VẼ CHỮ ĐÁNH DẤU MÀN HÌNH + BỘ CHỌN CỔNG PORT TRỰC TIẾP TRÊN CANVAS
+    if (showOverlays && mode !== 'cabling') {
+      screens.forEach(s => {
+        const totalW = s.cols * s.cabW;
+        const totalH = s.rows * s.cabH;
+        const cx = s.x + totalW / 2;
+        const cy = s.y + totalH / 2;
+        const portCol = getPortColor(s.port || 1);
+        const displayText = s.customText || s.name;
+        const style = s.textStyle || 'banner';
+
+        const mWidth = ((s.cols * (s.mmW || 500)) / 1000).toFixed(2);
+        const mHeight = ((s.rows * (s.mmH || 500)) / 1000).toFixed(2);
+
+        if (style === 'watermark') {
+          ctx.save();
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.42)';
+          const fontSize = Math.max(20, Math.min(totalW / (displayText.length * 0.7), totalH * 0.35));
+          ctx.font = `bold ${fontSize}px sans-serif`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(displayText.toUpperCase(), cx, cy);
+          ctx.restore();
+
+        } else if (style === 'header') {
+          const headerH = 26 / zoom;
+          ctx.fillStyle = 'rgba(8, 12, 19, 0.95)';
+          ctx.beginPath();
+          ctx.roundRect(s.x, s.y - headerH - 4 / zoom, totalW, headerH, 4 / zoom);
+          ctx.fill();
+          ctx.strokeStyle = portCol;
+          ctx.lineWidth = 1.5 / zoom;
+          ctx.stroke();
+
+          ctx.fillStyle = '#ffffff';
+          ctx.font = `bold ${Math.max(10, 11 / zoom)}px sans-serif`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(`📺 ${displayText} [Port ${s.port}] · ${mWidth}m × ${mHeight}m (${totalW}×${totalH} px)`, s.x + totalW / 2, s.y - headerH / 2 - 4 / zoom);
+
+        } else {
+          // BIỂN HIỆU TRUNG TÂM (CENTER TAG)
+          const tagW = Math.max(170, displayText.length * 12);
+          const tagH = 50;
+
+          ctx.fillStyle = 'rgba(8, 12, 19, 0.92)';
+          ctx.strokeStyle = portCol;
+          ctx.lineWidth = 1.5 / zoom;
+          ctx.beginPath();
+          ctx.roundRect(cx - tagW / 2, cy - tagH / 2, tagW, tagH, 6 / zoom);
+          ctx.fill();
+          ctx.stroke();
+
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 12px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(displayText, cx, cy - 10);
+
+          ctx.fillStyle = 'var(--text-secondary)';
+          ctx.font = '10px sans-serif';
+          ctx.fillText(`${mWidth}m × ${mHeight}m · Port ${s.port} (${totalW}×${totalH} px)`, cx, cy + 8);
+
+        }
+      });
+    }
+
+    // 5. CÁC NÚT TƯƠNG TÁC QUANH MÀN HÌNH
+    const activeScreen = screens.find(s => s.id === activeScreenId);
+    if (activeScreen && mode === 'edit') {
+      const sW = activeScreen.cols * activeScreen.cabW;
+      const sH = activeScreen.rows * activeScreen.cabH;
+
+      const colBtnX = activeScreen.x + sW + 14 / zoom;
+      const colBtnY = activeScreen.y + sH / 2;
+      const btnR = 14 / zoom;
+
+      drawCircleButton(colBtnX, colBtnY - 18 / zoom, btnR, '+', '#10b981');
+      canvasButtons.push({
+        x: colBtnX - btnR, y: colBtnY - 18 / zoom - btnR, w: btnR * 2, h: btnR * 2,
+        action: () => {
+          recordState();
+          activeScreen.cols++;
+          rebuildScreenCabinets(activeScreen);
+          updateScreenListUI();
+          syncScreenPropertiesUI();
+          render();
+        }
+      });
+
+      if (activeScreen.cols > 1) {
+        drawCircleButton(colBtnX, colBtnY + 18 / zoom, btnR, '−', '#ef4444');
+        canvasButtons.push({
+          x: colBtnX - btnR, y: colBtnY + 18 / zoom - btnR, w: btnR * 2, h: btnR * 2,
+          action: () => {
+            recordState();
+            activeScreen.cols--;
+            rebuildScreenCabinets(activeScreen);
+            updateScreenListUI();
+            syncScreenPropertiesUI();
+            render();
+          }
+        });
+      }
+
+      const rowBtnX = activeScreen.x + sW / 2;
+      const rowBtnY = activeScreen.y + sH + 14 / zoom;
+
+      drawCircleButton(rowBtnX - 18 / zoom, rowBtnY, btnR, '+', '#10b981');
+      canvasButtons.push({
+        x: rowBtnX - 18 / zoom - btnR, y: rowBtnY - btnR, w: btnR * 2, h: btnR * 2,
+        action: () => {
+          recordState();
+          activeScreen.rows++;
+          rebuildScreenCabinets(activeScreen);
+          updateScreenListUI();
+          syncScreenPropertiesUI();
+          render();
+        }
+      });
+
+      if (activeScreen.rows > 1) {
+        drawCircleButton(rowBtnX + 18 / zoom, rowBtnY, btnR, '−', '#ef4444');
+        canvasButtons.push({
+          x: rowBtnX + 18 / zoom - btnR, y: rowBtnY - btnR, w: btnR * 2, h: btnR * 2,
+          action: () => {
+            recordState();
+            activeScreen.rows--;
+            rebuildScreenCabinets(activeScreen);
+            updateScreenListUI();
+            syncScreenPropertiesUI();
+            render();
+          }
+        });
+      }
+
+      const pillW = 115 / zoom;
+      const pillH = 28 / zoom;
+
+      const rightX = activeScreen.x + sW + 48 / zoom;
+      const rightY = activeScreen.y + sH / 2 - pillH / 2;
+      drawPillButton(rightX, rightY, pillW, pillH, '+ Sát Phải ➔', '#0d281e', '#10b981');
+      canvasButtons.push({ x: rightX, y: rightY, w: pillW, h: pillH, action: () => addScreenByDirection('right') });
+
+      const botX = activeScreen.x + sW / 2 - pillW / 2;
+      const botY = activeScreen.y + sH + 48 / zoom;
+      drawPillButton(botX, botY, pillW, pillH, '+ Sát Dưới ⬇', '#0d281e', '#10b981');
+      canvasButtons.push({ x: botX, y: botY, w: pillW, h: pillH, action: () => addScreenByDirection('bottom') });
+
+      const leftX = activeScreen.x - pillW - 16 / zoom;
+      const leftY = activeScreen.y + sH / 2 - pillH / 2;
+      drawPillButton(leftX, leftY, pillW, pillH, '⬅ Sát Trái +', '#0f2942', '#06b6d4');
+      canvasButtons.push({ x: leftX, y: leftY, w: pillW, h: pillH, action: () => addScreenByDirection('left') });
+
+      const topX = activeScreen.x + sW / 2 - pillW / 2;
+      const topY = activeScreen.y - pillH - 16 / zoom;
+      drawPillButton(topX, topY, pillW, pillH, '⬆ Sát Trên +', '#0f2942', '#06b6d4');
+      canvasButtons.push({ x: topX, y: topY, w: pillW, h: pillH, action: () => addScreenByDirection('top') });
+    }
+
+    // 6. KHUNG QUÉT CHUỘT
+    if (isBoxDeleting) {
+      const box = getBoxRect();
+      ctx.fillStyle = 'rgba(239, 68, 68, 0.32)';
+      ctx.strokeStyle = '#ef4444';
+      ctx.lineWidth = 2 / zoom;
+      ctx.setLineDash([6 / zoom, 4 / zoom]);
+      ctx.fillRect(box.x, box.y, box.w, box.h);
+      ctx.strokeRect(box.x, box.y, box.w, box.h);
+      ctx.setLineDash([]);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = `bold ${Math.max(10, 11 / zoom)}px sans-serif`;
+      ctx.fillText('🗑️ VÙNG XÓA', box.x + 8 / zoom, box.y + 16 / zoom);
+    }
+
+    if (isBoxSelecting) {
+      const box = getBoxRect();
+      ctx.fillStyle = 'rgba(6, 182, 212, 0.25)';
+      ctx.strokeStyle = '#06b6d4';
+      ctx.lineWidth = 2 / zoom;
+      ctx.setLineDash([6 / zoom, 4 / zoom]);
+      ctx.fillRect(box.x, box.y, box.w, box.h);
+      ctx.strokeRect(box.x, box.y, box.w, box.h);
+      ctx.setLineDash([]);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = `bold ${Math.max(10, 11 / zoom)}px sans-serif`;
+      ctx.fillText('🔍 BÔI ĐEN CHỌN', box.x + 8 / zoom, box.y + 16 / zoom);
+    }
+
+    ctx.restore();
+
+    document.getElementById('totalCabinets').innerText = cabinets.length;
+    document.getElementById('totalFaults').innerText = moduleFaultCount;
+    document.getElementById('selectedInfo').innerText = `${selectedCabinets.length} tấm`;
+  }
+
+  function drawArrowHead(x1, y1, x2, y2, color) {
+    const midX = (x1 + x2) / 2;
+    const midY = (y1 + y2) / 2;
+    const angle = Math.atan2(y2 - y1, x2 - x1);
+    const arrowLen = 9 / zoom;
+
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(midX, midY);
+    ctx.lineTo(midX - arrowLen * Math.cos(angle - Math.PI / 6), midY - arrowLen * Math.sin(angle - Math.PI / 6));
+    ctx.lineTo(midX - arrowLen * Math.cos(angle + Math.PI / 6), midY - arrowLen * Math.sin(angle + Math.PI / 6));
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  function drawPortBadge(x, y, text, bg) {
+    const w = 46 / zoom;
+    const h = 14 / zoom;
+    ctx.fillStyle = bg;
+    ctx.beginPath();
+    ctx.roundRect(x, y, w, h, 3 / zoom);
+    ctx.fill();
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = `bold ${Math.round(8 / zoom)}px sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(text, x + w / 2, y + h / 2);
+  }
+
+  function drawCircleButton(x, y, r, symbol, color) {
+    ctx.fillStyle = '#101622';
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2 / zoom;
+    ctx.stroke();
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = `bold ${Math.round(r * 1.3)}px sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(symbol, x, y);
+  }
+
+  function drawPillButton(x, y, w, h, text, bg, border) {
+    ctx.fillStyle = bg;
+    ctx.beginPath();
+    ctx.roundRect(x, y, w, h, 5 / zoom);
+    ctx.fill();
+    ctx.strokeStyle = border;
+    ctx.lineWidth = 1.5 / zoom;
+    ctx.stroke();
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = `bold ${Math.max(9, 10 / zoom)}px sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(text, x + w / 2, y + h / 2);
+  }
+
+  // ==========================================
+  // XỬ LÝ CHUỘT
+  // ==========================================
+  function getBoxRect() {
+    return {
+      x: Math.min(boxStart.x, boxEnd.x),
+      y: Math.min(boxStart.y, boxEnd.y),
+      w: Math.abs(boxEnd.x - boxStart.x),
+      h: Math.abs(boxEnd.y - boxStart.y)
+    };
+  }
+
+  function rectsIntersect(r1, r2) {
+    return !(r2.x > r1.x + r1.w || r2.x + r2.w < r1.x || r2.y > r1.y + r1.h || r2.y + r2.h < r1.y);
+  }
+
+  function getMouse(e) {
+    const rect = canvas.getBoundingClientRect();
+    return {
+      x: (e.clientX - rect.left - pan.x) / zoom,
+      y: (e.clientY - rect.top - pan.y) / zoom
+    };
+  }
+
+  canvas.addEventListener('pointerdown', (e) => {
+    canvas.setPointerCapture(e.pointerId);
+    if (e.button === 1 || e.button === 2 || spacePressed) {
+      isPanning = true;
+      panStart = { x: e.clientX - pan.x, y: e.clientY - pan.y };
+      canvas.style.cursor = 'grabbing';
+      return;
+    }
+
+    const m = getMouse(e);
+
+    // Click các nút [+] hoặc chọn Port trực tiếp trên canvas
+    if (mode === 'edit') {
+      for (let btn of canvasButtons) {
+        if (m.x >= btn.x && m.x <= btn.x + btn.w && m.y >= btn.y && m.y <= btn.y + btn.h) {
+          btn.action();
+          return;
+        }
+      }
+    }
+
+    isMouseDown = true;
+    hasDragged = false;
+
+    // Chế độ đi dây port
+    if (mode === 'cabling') {
+      isCablingDragging = true;
+      lastConnectedCabId = null;
+      const clickedCab = [...cabinets].reverse().find(c => m.x >= c.x && m.x <= c.x + c.w && m.y >= c.y && m.y <= c.y + c.h);
+      if (clickedCab) {
+        const currentPort = Math.max(1, parseInt(document.getElementById('hudPortNum').value) || 1);
+        connectCabinetToPort(clickedCab, currentPort);
+      }
+      return;
+    }
+
+    if (mode === 'delete' || e.altKey) {
+      isBoxDeleting = true;
+      boxStart = { ...m };
+      boxEnd = { ...m };
+      return;
+    }
+
+    if (mode === 'fault') {
+      const target = [...cabinets].reverse().find(c => m.x >= c.x && m.x <= c.x + c.w && m.y >= c.y && m.y <= c.y + c.h);
+      if (target) {
+        recordState();
+        const modCols = Math.max(1, target.cols || 2);
+        const modRows = Math.max(1, target.rows || 2);
+        const mw = target.w / modCols;
+        const mh = target.h / modRows;
+        const cIdx = Math.floor((m.x - target.x) / mw);
+        const rIdx = Math.floor((m.y - target.y) / mh);
+        const mIdx = rIdx * modCols + cIdx;
+
+        if (!target.faultModules) target.faultModules = [];
+        const fPos = target.faultModules.indexOf(mIdx);
+        if (fPos > -1) target.faultModules.splice(fPos, 1);
+        else target.faultModules.push(mIdx);
+
+        syncCabinetInspector();
+        render();
+      }
+      return;
+    }
+
+    const clickedCab = [...cabinets].reverse().find(c => m.x >= c.x && m.x <= c.x + c.w && m.y >= c.y && m.y <= c.y + c.h);
+
+    if (clickedCab) {
+      if (!selectedCabinets.includes(clickedCab)) {
+        if (e.shiftKey || e.ctrlKey) selectedCabinets.push(clickedCab);
+        else selectedCabinets = [clickedCab];
+      }
+
+      isDraggingGroup = true;
+      dragPreSnapshot = getSnapshot();
+      dragGroupStartMouse = { x: m.x, y: m.y };
+      dragGroupInitPos = selectedCabinets.map(c => ({
+        cab: c,
+        startX: c.x,
+        startY: c.y
+      }));
+
+      if (clickedCab.screenId && clickedCab.screenId !== activeScreenId) {
+        activeScreenId = clickedCab.screenId;
+        updateScreenListUI();
+        syncScreenPropertiesUI();
+      }
+      syncCabinetInspector();
+    } else {
+      isBoxSelecting = true;
+      boxStart = { ...m };
+      boxEnd = { ...m };
+      if (!e.shiftKey && !e.ctrlKey) selectedCabinets = [];
+      syncCabinetInspector();
+    }
+    render();
+  });
+
+  canvas.addEventListener('pointermove', (e) => {
+    const m = getMouse(e);
+    document.getElementById('cursorCoord').innerText = `X: ${Math.round(m.x)}, Y: ${Math.round(m.y)}`;
+
+    if (isPanning) {
+      pan.x = e.clientX - panStart.x;
+      pan.y = e.clientY - panStart.y;
+      render();
+      return;
+    }
+
+    if (spacePressed) {
+      canvas.style.cursor = 'grab';
+    } else if (mode === 'cabling') {
+      canvas.style.cursor = 'crosshair';
+    } else if (mode === 'delete') {
+      canvas.style.cursor = 'crosshair';
+    } else {
+      let isHoverBtn = false;
+      for (let btn of canvasButtons) {
+        if (m.x >= btn.x && m.x <= btn.x + btn.w && m.y >= btn.y && m.y <= btn.y + btn.h) {
+          isHoverBtn = true; break;
+        }
+      }
+      canvas.style.cursor = isHoverBtn ? 'pointer' : (isDraggingGroup ? 'grabbing' : 'default');
+    }
+
+    if (!isMouseDown) return;
+
+    if (mode === 'cabling' && isCablingDragging) {
+      const cabUnder = [...cabinets].reverse().find(c => m.x >= c.x && m.x <= c.x + c.w && m.y >= c.y && m.y <= c.y + c.h);
+      if (cabUnder) {
+        const currentPort = Math.max(1, parseInt(document.getElementById('hudPortNum').value) || 1);
+        connectCabinetToPort(cabUnder, currentPort);
+      }
+      return;
+    }
+
+    if (isBoxDeleting || isBoxSelecting) {
+      boxEnd = { ...m };
+      render();
+    } else if (isDraggingGroup && mode === 'edit') {
+      hasDragged = true;
+      let dx = Math.round(m.x - dragGroupStartMouse.x);
+      let dy = Math.round(m.y - dragGroupStartMouse.y);
+
+      const minStartX = Math.min(...dragGroupInitPos.map(p => p.startX));
+      const minStartY = Math.min(...dragGroupInitPos.map(p => p.startY));
+
+      if (Math.abs(minStartX + dx) < 15) dx = -minStartX;
+      if (Math.abs(minStartY + dy) < 15) dy = -minStartY;
+
+      dragGroupInitPos.forEach(item => {
+        item.cab.x = item.startX + dx;
+        item.cab.y = item.startY + dy;
+      });
+
+      screens.forEach(s => {
+        const sCabs = cabinets.filter(c => c.screenId === s.id);
+        if (sCabs.length > 0) {
+          s.x = Math.min(...sCabs.map(c => c.x));
+          s.y = Math.min(...sCabs.map(c => c.y));
+        }
+      });
+
+      syncScreenPropertiesUI();
+      syncCabinetInspector();
+      render();
+    }
+  });
+
+  window.addEventListener('pointerup', () => {
+    isCablingDragging = false;
+    lastConnectedCabId = null;
+
+    if (isPanning) {
+      isPanning = false;
+      canvas.style.cursor = spacePressed ? 'grab' : 'default';
+      return;
+    }
+
+    if (!isMouseDown) return;
+    isMouseDown = false;
+
+    if (isDraggingGroup && hasDragged && dragPreSnapshot) {
+      recordState(dragPreSnapshot);
+      dragPreSnapshot = null;
+    }
+
+    if (isBoxDeleting) {
+      const box = getBoxRect();
+      if (box.w > 6 && box.h > 6) {
+        recordState();
+        const prevCount = cabinets.length;
+        cabinets = cabinets.filter(c => !rectsIntersect(c, box));
+        const deletedCount = prevCount - cabinets.length;
+
+        if (deletedCount > 0) {
+          selectedCabinets = [];
+          cleanEmptyScreens();
+          render();
+          showToast(`🗑️ Đã xóa ${deletedCount} cabinet!`);
+        }
+      }
+      isBoxDeleting = false;
+      render();
+      return;
+    }
+
+    if (isBoxSelecting) {
+      const box = getBoxRect();
+      if (box.w > 6 && box.h > 6) {
+        const newlySelected = cabinets.filter(c => rectsIntersect(c, box));
+        selectedCabinets = newlySelected;
+        if (selectedCabinets.length > 0) {
+          showToast(`🎯 Đã bôi đen ${selectedCabinets.length} cabinet.`);
+        }
+        syncCabinetInspector();
+      }
+      isBoxSelecting = false;
+      render();
+    }
+
+    isDraggingGroup = false;
+    dragGroupInitPos = [];
+  });
+
+  canvas.addEventListener('dblclick', (e) => {
+    const m = getMouse(e);
+    const target = cabinets.find(c => m.x >= c.x && m.x <= c.x + c.w && m.y >= c.y && m.y <= c.y + c.h);
+    if (target) {
+      recordState();
+      const modCols = Math.max(1, target.cols || 2);
+      const modRows = Math.max(1, target.rows || 2);
+      const mw = target.w / modCols;
+      const mh = target.h / modRows;
+      const cIdx = Math.floor((m.x - target.x) / mw);
+      const rIdx = Math.floor((m.y - target.y) / mh);
+      const mIdx = rIdx * modCols + cIdx;
+
+      if (!target.faultModules) target.faultModules = [];
+      const fPos = target.faultModules.indexOf(mIdx);
+      if (fPos > -1) {
+        target.faultModules.splice(fPos, 1);
+        showToast(`✅ Đã gỡ báo hỏng Module M${mIdx + 1}`);
+      } else {
+        target.faultModules.push(mIdx);
+        showToast(`⚠️ Đã báo hỏng Module M${mIdx + 1}`);
+      }
+
+      syncCabinetInspector();
+      render();
+    }
+  });
+
+  // PHÍM TẮT TIỆN ÍCH
+  window.addEventListener('keydown', (e) => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+
+    if (e.ctrlKey || e.metaKey) {
+      if (e.key === 'z' || e.key === 'Z') {
+        e.preventDefault();
+        if (e.shiftKey) redo();
+        else undo();
+      } else if (e.key === 'y' || e.key === 'Y') {
+        e.preventDefault();
+        redo();
+      } else if (e.key === 's' || e.key === 'S') {
+        e.preventDefault();
+        saveProjectFile();
+      } else if (e.key === 'o' || e.key === 'O') {
+        e.preventDefault();
+        openProjectFile();
+      } else if (e.key === 'n' || e.key === 'N') {
+        e.preventDefault();
+        newProject();
+      }
+    } else if (e.key === 'Delete' || e.key === 'Backspace') {
+      deleteSelectedCabinets();
+    }
+  });
+
+  function deleteSelectedCabinets() {
+    if (selectedCabinets.length === 0) return;
+    recordState();
+    const count = selectedCabinets.length;
+    cabinets = cabinets.filter(c => !selectedCabinets.includes(c));
+    selectedCabinets = [];
+    cleanEmptyScreens();
+    render();
+    showToast(`🗑️ Đã xóa ${count} cabinet!`);
+  }
+
+  function setMode(newMode) {
+    mode = newMode;
+    document.getElementById('btnEdit').classList.toggle('active', mode === 'edit');
+    document.getElementById('btnCabling').classList.toggle('active', mode === 'cabling');
+    document.getElementById('btnFault').classList.toggle('active', mode === 'fault');
+    document.getElementById('btnDeleteArea').classList.toggle('active', mode === 'delete');
+
+    document.getElementById('cablingHUD').style.display = (mode === 'cabling') ? 'flex' : 'none';
+    syncScreenPropertiesUI();
+
+    const instr = document.getElementById('footerInstruction');
+    if (instr) {
+      if (mode === 'cabling') {
+        instr.innerHTML = '⚡ <strong>VẼ DÂY THỦ CÔNG:</strong> Nhấp hoặc kéo qua các cabinet theo thứ tự; khi đủ tải, dây tự ngắt sang Port kế tiếp (tối đa 40 cabin 500×500 hoặc 20 cabin 500×1000 mỗi Port).';
+        instr.style.color = '#00f5d4';
+      } else if (mode === 'delete') {
+        instr.innerHTML = '⚠️ <strong>CHẾ ĐỘ QUÉT XÓA:</strong> Giữ chuột kéo tạo khung ĐỎ để XÓA các cabinet ngay tức thì!';
+        instr.style.color = '#ff8b94';
+      } else if (mode === 'fault') {
+        instr.innerHTML = '⚠️ <strong>CHẾ ĐỘ BÁO HỎNG:</strong> Nhấp vào bất kỳ module con nào trên màn hình để đánh dấu HỎNG (Fault)!';
+        instr.style.color = '#ffd166';
+      } else {
+        instr.innerHTML = '💡 Cuộn chuột để ZOOM VÀO ĐIỂM TRỎ • Giữ phím [Space] hoặc [Chuột giữa/phải] để KÉO DỜI Canvas!';
+        instr.style.color = 'var(--text-muted)';
+      }
+    }
+    render();
+  }
+
+  // ==========================================
+  // XUẤT ẢNH PNG 1:1
+  // ==========================================
+  function exportPNG() {
+    if (cabinets.length === 0) {
+      alert('Không có Cabinet nào để xuất ảnh!');
+      return;
+    }
+
+    const offCanvas = document.createElement('canvas');
+    const offCtx = offCanvas.getContext('2d');
+    const exportW = canvasBounds.w;
+    const exportH = canvasBounds.h;
+    offCanvas.width = exportW;
+    offCanvas.height = exportH;
+
+    offCtx.fillStyle = '#05070b';
+    offCtx.fillRect(0, 0, exportW, exportH);
+
+    offCtx.strokeStyle = '#223249';
+    offCtx.lineWidth = 2;
+    offCtx.strokeRect(0, 0, exportW, exportH);
+
+    const showNumbers = document.getElementById('chkNumbers').checked;
+    const showLabels = document.getElementById('chkLabels').checked;
+    const showOverlays = document.getElementById('chkSectionOverlays').checked;
+    const showCabling = document.getElementById('chkCabling').checked;
+    const showGrid = document.getElementById('chkGrid').checked;
+    const showDiagonals = document.getElementById('chkDiagonals').checked;
+    const showCanvasCross = document.getElementById('chkCanvasCross').checked;
+
+    if (showCanvasCross) {
+      offCtx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+      offCtx.lineWidth = 1.5;
+      offCtx.setLineDash([6, 6]);
+      offCtx.beginPath();
+      offCtx.moveTo(0, 0); offCtx.lineTo(canvasBounds.w, canvasBounds.h);
+      offCtx.moveTo(canvasBounds.w, 0); offCtx.lineTo(0, canvasBounds.h);
+      offCtx.stroke();
+      offCtx.setLineDash([]);
+    }
+
+    cabinets.forEach(cab => {
+      const modCols = Math.max(1, cab.cols || 2);
+      const modRows = Math.max(1, cab.rows || 2);
+      const mw = cab.w / modCols;
+      const mh = cab.h / modRows;
+      const portCol = getPortColor(cab.port || 1);
+
+      for (let c = 0; c < modCols; c++) {
+        for (let r = 0; r < modRows; r++) {
+          const modIdx = r * modCols + c;
+          const isModFault = (cab.fault) || (cab.faultModules && cab.faultModules.includes(modIdx));
+
+          const mx = cab.x + c * mw;
+          const my = cab.y + r * mh;
+
+          offCtx.fillStyle = (c + r) % 2 === 0 ? cab.color : '#0a0e16';
+          offCtx.fillRect(mx, my, mw, mh);
+
+          if (isModFault) {
+            offCtx.fillStyle = 'rgba(239, 68, 68, 0.78)';
+            offCtx.fillRect(mx, my, mw, mh);
+            offCtx.strokeStyle = '#ffffff';
+            offCtx.lineWidth = 1.8;
+            offCtx.beginPath();
+            offCtx.moveTo(mx, my); offCtx.lineTo(mx + mw, my + mh);
+            offCtx.moveTo(mx + mw, my); offCtx.lineTo(mx, my + mh);
+            offCtx.stroke();
+          }
+
+          if (showGrid) {
+            offCtx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+            offCtx.lineWidth = 1;
+            offCtx.strokeRect(mx, my, mw, mh);
+          }
+        }
+      }
+
+      offCtx.strokeStyle = '#ffffff';
+      offCtx.lineWidth = 1.5;
+      offCtx.strokeRect(cab.x, cab.y, cab.w, cab.h);
+
+      if (showCabling && cab.cableOrder > 0) {
+        const tagW = 28;
+        const tagH = 14;
+        offCtx.fillStyle = 'rgba(9, 13, 20, 0.9)';
+        offCtx.beginPath();
+        offCtx.roundRect(cab.x + 3, cab.y + 3, tagW, tagH, 3);
+        offCtx.fill();
+        offCtx.strokeStyle = portCol;
+        offCtx.lineWidth = 1;
+        offCtx.stroke();
+
+        offCtx.fillStyle = portCol;
+        offCtx.font = `bold 8px sans-serif`;
+        offCtx.textAlign = 'center';
+        offCtx.textBaseline = 'middle';
+        offCtx.fillText(`P${cab.port}`, cab.x + 3 + tagW / 2, cab.y + 3 + tagH / 2);
+      }
+
+      if (showNumbers && cab.cableOrder !== undefined && cab.cableOrder > 0) {
+        const cx = cab.x + cab.w / 2;
+        const cy = cab.y + cab.h / 2;
+        const orderStr = cab.cableOrder < 10 ? `0${cab.cableOrder}` : `${cab.cableOrder}`;
+        const markText = `P${cab.port}-${orderStr}`;
+        const badgeW = 54;
+        const badgeH = 22;
+
+        offCtx.fillStyle = 'rgba(0, 0, 0, 0.85)';
+        offCtx.beginPath();
+        offCtx.roundRect(cx - badgeW / 2, cy - badgeH / 2, badgeW, badgeH, 4);
+        offCtx.fill();
+        offCtx.strokeStyle = portCol;
+        offCtx.lineWidth = 1.5;
+        offCtx.stroke();
+
+        offCtx.fillStyle = portCol;
+        offCtx.font = `bold 11px sans-serif`;
+        offCtx.textAlign = 'center';
+        offCtx.textBaseline = 'middle';
+        offCtx.fillText(markText, cx, cy);
+      }
+
+      if (showLabels) {
+        offCtx.fillStyle = '#ffffff';
+        offCtx.font = 'bold 12px sans-serif';
+        offCtx.textAlign = 'left';
+        offCtx.textBaseline = 'top';
+        offCtx.fillText(cab.label, cab.x + 6, cab.y + cab.h - 18);
+      }
+    });
+
+    if (showDiagonals) {
+      screens.forEach(s => {
+        const totalW = s.cols * s.cabW;
+        const totalH = s.rows * s.cabH;
+        offCtx.strokeStyle = 'rgba(255, 255, 255, 0.28)';
+        offCtx.lineWidth = 1.2;
+        offCtx.beginPath();
+        offCtx.moveTo(s.x, s.y); offCtx.lineTo(s.x + totalW, s.y + totalH);
+        offCtx.moveTo(s.x + totalW, s.y); offCtx.lineTo(s.x, s.y + totalH);
+        offCtx.stroke();
+      });
+    }
+
+    if (showCabling) {
+      screens.forEach(screen => {
+        const portGroups = new Map();
+        cabinets
+          .filter(c => c.screenId === screen.id && c.cableOrder > 0)
+          .forEach(cab => {
+            if (!portGroups.has(cab.port)) portGroups.set(cab.port, []);
+            portGroups.get(cab.port).push(cab);
+          });
+
+        portGroups.forEach((screenCabs, port) => {
+          screenCabs.sort((a, b) => a.cableOrder - b.cableOrder);
+          if (screenCabs.length < 2) return;
+          const cableColor = getPortColor(port);
+          offCtx.strokeStyle = cableColor;
+          offCtx.lineWidth = 2.5;
+
+          for (let i = 0; i < screenCabs.length - 1; i++) {
+            const cur = screenCabs[i];
+            const next = screenCabs[i + 1];
+            offCtx.beginPath();
+            offCtx.moveTo(cur.x + cur.w / 2, cur.y + cur.h / 2);
+            offCtx.lineTo(next.x + next.w / 2, next.y + next.h / 2);
+            offCtx.stroke();
+          }
+        });
+      });
+    }
+
+    if (showOverlays) {
+      screens.forEach(s => {
+        const totalW = s.cols * s.cabW;
+        const totalH = s.rows * s.cabH;
+        const cx = s.x + totalW / 2;
+        const cy = s.y + totalH / 2;
+        const portCol = getPortColor(s.port || 1);
+        const displayText = s.customText || s.name;
+        const style = s.textStyle || 'banner';
+
+        const mWidth = ((s.cols * (s.mmW || 500)) / 1000).toFixed(2);
+        const mHeight = ((s.rows * (s.mmH || 500)) / 1000).toFixed(2);
+
+        if (style === 'watermark') {
+          offCtx.save();
+          offCtx.fillStyle = 'rgba(255, 255, 255, 0.45)';
+          const fontSize = Math.max(20, Math.min(totalW / (displayText.length * 0.7), totalH * 0.35));
+          offCtx.font = `bold ${fontSize}px sans-serif`;
+          offCtx.textAlign = 'center';
+          offCtx.textBaseline = 'middle';
+          offCtx.fillText(displayText.toUpperCase(), cx, cy);
+          offCtx.restore();
+        } else if (style === 'header') {
+          const headerH = 24;
+          offCtx.fillStyle = 'rgba(8, 12, 19, 0.95)';
+          offCtx.beginPath();
+          offCtx.roundRect(s.x, s.y - headerH - 4, totalW, headerH, 4);
+          offCtx.fill();
+          offCtx.strokeStyle = portCol;
+          offCtx.lineWidth = 1.5;
+          offCtx.stroke();
+
+          offCtx.fillStyle = '#ffffff';
+          offCtx.font = 'bold 11px sans-serif';
+          offCtx.textAlign = 'center';
+          offCtx.textBaseline = 'middle';
+          offCtx.fillText(`📺 ${displayText} [Port ${s.port}] · ${mWidth}m × ${mHeight}m (${totalW}×${totalH} px)`, s.x + totalW / 2, s.y - headerH / 2 - 4);
+        } else {
+          const tagW = Math.max(170, displayText.length * 12);
+          const tagH = 50;
+
+          offCtx.fillStyle = 'rgba(8, 12, 19, 0.92)';
+          offCtx.strokeStyle = portCol;
+          offCtx.lineWidth = 1.5;
+          offCtx.beginPath();
+          offCtx.roundRect(cx - tagW / 2, cy - tagH / 2, tagW, tagH, 6);
+          offCtx.fill();
+          offCtx.stroke();
+
+          offCtx.fillStyle = '#ffffff';
+          offCtx.font = 'bold 12px sans-serif';
+          offCtx.textAlign = 'center';
+          offCtx.textBaseline = 'middle';
+          offCtx.fillText(displayText, cx, cy - 10);
+
+          offCtx.fillStyle = '#94a3b8';
+          offCtx.font = '10px sans-serif';
+          offCtx.fillText(`${mWidth}m × ${mHeight}m · ${totalW} × ${totalH} px`, cx, cy + 8);
+        }
+      });
+    }
+
+    offCtx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+    offCtx.font = 'bold 13px sans-serif';
+    offCtx.textAlign = 'right';
+    offCtx.textBaseline = 'bottom';
+    offCtx.fillText(`LED CANVAS PRO STUDIO • ${exportW} × ${exportH} px`, exportW - 20, exportH - 16);
+
+    offCanvas.toBlob(function(blob) {
+      if (!blob) return;
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `LED-CANVAS-Final-V1-${exportW}x${exportH}-${Date.now()}.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('📸 Đã xuất file ảnh PNG 1:1!');
+    }, 'image/png');
+  }
+
+  // ==========================================
+  // SYNC INSPECTOR
+  // ==========================================
+  function syncCabinetInspector() {
+    const single = selectedCabinets[0];
+    if (!single) {
+      document.getElementById('inspectorTitle').innerText = 'SELECTED CABINET';
+      document.getElementById('propPortTag').value = '';
+      document.getElementById('propPort').value = '';
+      document.getElementById('cabinetPortChips').innerHTML = '';
+      document.getElementById('propCableOrder').value = '';
+      document.getElementById('propSection').value = '';
+      document.getElementById('propLabel').value = '';
+      document.getElementById('propX').value = '';
+      document.getElementById('propY').value = '';
+      document.getElementById('propW').value = '';
+      document.getElementById('propH').value = '';
+      document.getElementById('propModCols').value = '';
+      document.getElementById('propModRows').value = '';
+      document.getElementById('propColor').value = '#000000';
+      document.getElementById('propFault').checked = false;
+      return;
+    }
+
+    document.getElementById('inspectorTitle').innerText = selectedCabinets.length > 1 
+      ? `ĐÃ CHỌN ${selectedCabinets.length} TẤM` 
+      : `P${single.port || 1}-${single.cableOrder || 1} (${single.section})`;
+
+    const orderStr = (single.cableOrder || 1) < 10 ? `0${single.cableOrder || 1}` : `${single.cableOrder || 1}`;
+    document.getElementById('propPortTag').value = `PORT ${single.port || 1} #${orderStr}`;
+    
+    const portNum = single.port || 1;
+    const portCol = getPortColor(portNum);
+    const propPortInput = document.getElementById('propPort');
+    propPortInput.value = portNum;
+    propPortInput.style.color = portCol;
+
+    const chipsContainer = document.getElementById('cabinetPortChips');
+    chipsContainer.innerHTML = '';
+    const maxQuickPort = Math.max(6, portNum + 2);
+    for (let p = 1; p <= maxQuickPort; p++) {
+      const color = getPortColor(p);
+      const chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = `port-chip ${selectedCabinets.every(c => c.port === p) ? 'active' : ''}`;
+      chip.textContent = `P${p}`;
+      chip.style.borderColor = color;
+      if (selectedCabinets.every(c => c.port === p)) {
+        chip.style.background = color;
+        chip.style.color = '#000';
+      } else {
+        chip.style.color = color;
+      }
+      chip.title = `Gán cabinet đang chọn vào Port ${p}`;
+      chip.onclick = () => setSelectedCabinetsPort(p);
+      chipsContainer.appendChild(chip);
+    }
+
+    document.getElementById('propCableOrder').value = single.cableOrder || 1;
+    document.getElementById('propSection').value = single.section || '';
+    document.getElementById('propLabel').value = single.label;
+    document.getElementById('propX').value = Math.round(single.x);
+    document.getElementById('propY').value = Math.round(single.y);
+    document.getElementById('propW').value = Math.round(single.w);
+    document.getElementById('propH').value = Math.round(single.h);
+
+    document.getElementById('propModCols').value = single.cols || 2;
+    document.getElementById('propModRows').value = single.rows || 2;
+
+    document.getElementById('propColor').value = single.color;
+    document.getElementById('propFault').checked = single.fault || false;
+  }
+
+  function setSelectedCabinetsPort(portNum) {
+    if (selectedCabinets.length === 0) return;
+    const p = Math.max(1, Math.min(999, parseInt(portNum) || 1));
+    const selectedIds = new Set(selectedCabinets.map(c => c.id));
+    const otherPortCabs = cabinets.filter(c => c.port === p && c.cableOrder > 0 && !selectedIds.has(c.id));
+    let nextOrder = otherPortCabs.reduce((max, c) => Math.max(max, c.cableOrder), 0) + 1;
+
+    recordState();
+    selectedCabinets.forEach(c => {
+      c.port = p;
+      c.cableOrder = nextOrder;
+      c.index = nextOrder;
+      nextOrder++;
+    });
+    syncCabinetInspector();
+    syncScreenPropertiesUI();
+    render();
+  }
+
+  document.getElementById('propPort').addEventListener('input', (e) => {
+    if (selectedCabinets.length > 0) {
+      const newP = Math.max(1, parseInt(e.target.value) || 1);
+      setSelectedCabinetsPort(newP);
+    }
+  });
+
+  document.getElementById('propCableOrder').addEventListener('input', (e) => {
+    if (selectedCabinets.length === 1) {
+      recordState();
+      const val = Math.max(1, parseInt(e.target.value) || 1);
+      selectedCabinets[0].cableOrder = val;
+      selectedCabinets[0].index = val;
+      syncCabinetInspector();
+      render();
+    }
+  });
+
+  document.getElementById('propModCols').addEventListener('change', (e) => {
+    if (selectedCabinets.length > 0) {
+      recordState();
+      const val = Math.max(1, parseInt(e.target.value) || 1);
+      selectedCabinets.forEach(c => c.cols = val);
+      render();
+    }
+  });
+
+  document.getElementById('propModRows').addEventListener('change', (e) => {
+    if (selectedCabinets.length > 0) {
+      recordState();
+      const val = Math.max(1, parseInt(e.target.value) || 1);
+      selectedCabinets.forEach(c => c.rows = val);
+      render();
+    }
+  });
+
+  document.getElementById('propLabel').addEventListener('input', (e) => {
+    selectedCabinets.forEach(c => c.label = e.target.value); render();
+  });
+  document.getElementById('propX').addEventListener('input', (e) => {
+    if (selectedCabinets[0]) { selectedCabinets[0].x = parseFloat(e.target.value) || 0; render(); }
+  });
+  document.getElementById('propY').addEventListener('input', (e) => {
+    if (selectedCabinets[0]) { selectedCabinets[0].y = parseFloat(e.target.value) || 0; render(); }
+  });
+  document.getElementById('propW').addEventListener('input', (e) => {
+    selectedCabinets.forEach(c => c.w = Math.max(16, parseFloat(e.target.value) || 16)); render();
+  });
+  document.getElementById('propH').addEventListener('input', (e) => {
+    selectedCabinets.forEach(c => c.h = Math.max(16, parseFloat(e.target.value) || 16)); render();
+  });
+  document.getElementById('propColor').addEventListener('input', (e) => {
+    selectedCabinets.forEach(c => c.color = e.target.value); render();
+  });
+  document.getElementById('propFault').addEventListener('change', (e) => {
+    recordState();
+    selectedCabinets.forEach(c => c.fault = e.target.checked);
+    render();
+  });
+
+  document.getElementById('chkNumbers').addEventListener('change', render);
+  document.getElementById('chkLabels').addEventListener('change', render);
+  document.getElementById('chkSectionOverlays').addEventListener('change', render);
+  document.getElementById('chkCabling').addEventListener('change', render);
+  document.getElementById('chkGrid').addEventListener('change', render);
+  document.getElementById('chkModuleLabels').addEventListener('change', render);
+  document.getElementById('chkDiagonals').addEventListener('change', render);
+  document.getElementById('chkCanvasCross').addEventListener('change', render);
+
+  // ==========================================
+  // LƯU & MỞ FILE DỰ ÁN
+  // ==========================================
+  function saveProjectFile() {
+    if (screens.length === 0 && cabinets.length === 0) {
+      alert('Không có màn hình nào để lưu!');
+      return;
+    }
+    const defaultName = `LED-CANVAS-Final-V1-${new Date().toISOString().slice(0,10)}`;
+    document.getElementById('saveProjectName').value = defaultName;
+    document.getElementById('saveProjectDialog').showModal();
+    document.getElementById('saveProjectName').focus();
+  }
+
+  document.getElementById('saveProjectForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const fileName = document.getElementById('saveProjectName').value
+      .trim()
+      .replace(/\.ledproj$/i, '')
+      .replace(/[<>:"/\\|?*\u0000-\u001f]/g, '-')
+      .replace(/[. ]+$/g, '');
+    if (!fileName) {
+      document.getElementById('saveProjectName').focus();
+      return;
+    }
+    document.getElementById('saveProjectDialog').close();
+
+    const projectData = {
+      app: "LED_CANVAS_SYSTEM_40_20",
+      release: "V1",
+      version: "5.0",
+      savedAt: new Date().toISOString(),
+      canvasBounds: canvasBounds,
+      settings: {
+        showCabling: document.getElementById('chkCabling').checked,
+        showNumbers: document.getElementById('chkNumbers').checked,
+        showLabels: document.getElementById('chkLabels').checked,
+        showOverlays: document.getElementById('chkSectionOverlays').checked,
+        showGrid: document.getElementById('chkGrid').checked,
+        showModuleLabels: document.getElementById('chkModuleLabels').checked,
+        showDiagonals: document.getElementById('chkDiagonals').checked,
+        showCanvasCross: document.getElementById('chkCanvasCross').checked,
+        gap: document.getElementById('screenGapInput').value
+      },
+      screens: screens,
+      cabinets: cabinets
+    };
+
+    const blob = new Blob([JSON.stringify(projectData, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${fileName}.ledproj`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    showToast(`💾 Đã lưu dự án: ${fileName}.ledproj`);
+  });
+
+  function openProjectFile() {
+    document.getElementById('fileInput').click();
+  }
+
+  document.getElementById('fileInput').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+      try {
+        const data = JSON.parse(evt.target.result);
+        if (!data.screens && !data.cabinets) throw new Error('Định dạng file không đúng chuẩn!');
+
+        recordState();
+
+        if (data.canvasBounds) {
+          canvasBounds = data.canvasBounds;
+          document.getElementById('canvasBoundW').value = canvasBounds.w;
+          document.getElementById('canvasBoundH').value = canvasBounds.h;
+          updateCanvasResIndicator();
+        }
+
+        if (data.settings) {
+          document.getElementById('chkCabling').checked = data.settings.showCabling ?? true;
+          document.getElementById('chkNumbers').checked = data.settings.showNumbers ?? true;
+          document.getElementById('chkLabels').checked = data.settings.showLabels ?? false;
+          document.getElementById('chkSectionOverlays').checked = data.settings.showOverlays ?? true;
+          document.getElementById('chkGrid').checked = data.settings.showGrid ?? true;
+          document.getElementById('chkModuleLabels').checked = data.settings.showModuleLabels ?? true;
+          document.getElementById('chkDiagonals').checked = data.settings.showDiagonals ?? true;
+          document.getElementById('chkCanvasCross').checked = data.settings.showCanvasCross ?? false;
+          if (data.settings.gap !== undefined) document.getElementById('screenGapInput').value = data.settings.gap;
+        }
+
+        screens = data.screens || [];
+        cabinets = data.cabinets || [];
+        activeScreenId = screens.length > 0 ? screens[0].id : null;
+        selectedCabinets = cabinets.filter(c => c.screenId === activeScreenId);
+
+        updateScreenListUI();
+        syncScreenPropertiesUI();
+        syncCabinetInspector();
+        fitView();
+
+        showToast(`📂 Đã mở file thành công: ${file.name}`);
+      } catch (err) {
+        alert('Lỗi đọc file: ' + err.message);
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  });
+
+  function newProject() {
+    if (screens.length > 0) {
+      if (!confirm('Tạo dự án mới? Toàn bộ sơ đồ hiện tại sẽ bị xóa.')) return;
+    }
+    recordState();
+    screens = [];
+    cabinets = [];
+    selectedCabinets = [];
+    activeScreenId = null;
+    createNewScreen();
+    fitView();
+    showToast('✨ Đã tạo dự án mới!');
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.innerText = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2200);
+  }
+
+  function resizeCanvas() {
+    canvas.width = canvas.clientWidth;
+    canvas.height = canvas.clientHeight;
+    render();
+  }
+  function setMobileView(view) {
+    const workspace = document.getElementById('workspace');
+    workspace.dataset.mobileView = view;
+    document.querySelectorAll('[data-mobile-view-button]').forEach(button => {
+      button.setAttribute('aria-pressed', String(button.dataset.mobileViewButton === view));
+    });
+    if (view === 'canvas') requestAnimationFrame(resizeCanvas);
+  }
+  window.addEventListener('resize', resizeCanvas);
+  resizeCanvas();
+
+  // Khởi tạo ban đầu
+  createNewScreen();
+  updateCanvasResIndicator();
+  fitView();
+</script>
+</body>
+</html>
